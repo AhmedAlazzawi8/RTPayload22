@@ -1,12 +1,10 @@
 import cv2
+import numpy as np
+c = cv2.VideoCapture(0)
 
-cv2.NamedWindow("w1", cv.CV_WINDOW_AUTOSIZE)
-capture = cv2.CaptureFromCAM(0)
-
-def repeat():
-  frame = cv2.QueryFrame(capture)
-  cv2.ShowImage("w1", frame)
-
-
-while True:
-  repeat()
+while(1):
+    _,f = c.read()
+    cv2.imshow('e2',f)
+    if cv2.waitKey(5)==27:
+        break
+cv2.destroyAllWindows()
