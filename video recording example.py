@@ -1,21 +1,25 @@
 import cv2
+import numpy
 
-cap= cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
-width= int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-height= int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-writer= cv2.VideoWriter('basicvideo.mp4', cv2.VideoWriter_fourcc(*'DIVX'), 20, (width,height))
+writer = cv2.VideoWriter('basicvideo.mp4', cv2.VideoWriter_fourcc(*'MPEG'), 20, (width,height))
 
 
 while True:
-    ret,frame= cap.read()
+    ret,frame = cap.read()
 
-    writer.write(frame)
+    if ret == True:
+        writer.write(frame)
 
-    cv2.imshow('frame', frame)
+        cv2.imshow('frame', frame)
 
-    if cv2.waitKey(1) & 0xFF == 27:
+        if cv2.waitKey(1) & 0xFF == 27:
+            break
+    else: 
         break
 
 
