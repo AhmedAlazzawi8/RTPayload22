@@ -5,7 +5,7 @@ c = cv2.VideoCapture("sample vid.mp4")
 while(1):
     _,f = c.read()
     
-    processed = cv2.imread(f,  cv2.IMREAD_GRAYSCALE)
+    processed = cv2.cvtColor(f,  cv2.IMREAD_GRAYSCALE)
 
     cv2.imshow('e2',processed)
 
