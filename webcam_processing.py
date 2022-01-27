@@ -25,6 +25,7 @@ print(1)
 sleep(1)
 _, img1 = c.read()
 
+c = cv.VideoCapture(0)
 print(3)
 sleep(1)
 print(2)
