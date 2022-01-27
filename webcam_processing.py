@@ -30,16 +30,20 @@ flann = cv.FlannBasedMatcher(index_params,search_params)
 while 1:
 
     _, img1 = c.read()
-
+    print("Picture one taken")
     for i in range(0, 13):
         c.read()
     
     _, img2 = c.read()
+    print("Picture two taken")
+
 
     # find the keypoints and descriptors with SIFT
     kp1, des1 = sift.detectAndCompute(img1,None)
     kp2, des2 = sift.detectAndCompute(img2,None)
 
+    print("Keypoints found")
+    
     matches = flann.knnMatch(des1,des2,k=2)
     # Need to draw only good matches, so create a mask
     matchesMask = [[0,0] for i in range(len(matches))]
@@ -51,10 +55,14 @@ while 1:
                     singlePointColor = (255,0,0),
                     matchesMask = matchesMask,
                     flags = cv.DrawMatchesFlags_DEFAULT)
+    
+    print("Matches found?")
+    
     img3 = cv.drawMatchesKnn(img1,kp1,img2,kp2,matches,None,**draw_params)
+    print("Matches Drawn")
     # plt.imshow(img3,),plt.show()
     cv.imshow('img', img3)
-
+    print("Image Shown")
 # # Initiate ORB detector
 # orb = cv.ORB_create()
 # # Initiate SIFT detector
