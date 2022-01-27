@@ -46,9 +46,9 @@ while 1:
     img3 = cv.drawMatches(img1,kp1,img2,kp2,matches[:10],None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
     # plt.imshow(img3),plt.show()
     cv.imshow('img', img3)
-    if cv2.waitKey(5)==27:
+    if cv.waitKey(5)==27:
         break
-cv2.destroyAllWindows()
+cv.destroyAllWindows()
 
 # while(1):
 #     _,f = c.read()
