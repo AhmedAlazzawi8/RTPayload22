@@ -24,23 +24,19 @@ sleep(1)
 print(1)
 sleep(1)
 
-for i in range(0, 300):
-  c.read()
+
   
 _, img1 = c.read()
 
-print(3)
-sleep(1)
-print(2)
-sleep(1)
-print(1)
-sleep(1)
+for i in range(0, 300):
+  c.read()
+  
 _, img2 = c.read()
 
 cv.imshow('good1', img1)
 cv.imshow('good2', img2)
 
-sleep(10)
+
 
 
 # Initiate ORB detector
