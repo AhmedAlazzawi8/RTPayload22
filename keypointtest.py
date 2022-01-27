@@ -4,8 +4,8 @@ from matplotlib import pyplot as plt
 
 MIN_MATCH_COUNT = 10
 
-img1 = cv2.imread('Huntsville.jpg',0)          # queryImage
-img2 = cv2.imread('Huntsville_closer.jpg.png',0) # trainImage
+img1 = cv2.imread('Huntsville_closer.jpg.png',0)          # queryImage
+img2 = cv2.imread('Huntsville.jpg',0) # trainImage
 
 print("1")
 # Initiate SIFT detector
@@ -55,6 +55,8 @@ draw_params = dict(matchColor = (0,255,0), # draw matches in green color
                    matchesMask = matchesMask, # draw only inliers
                    flags = 2)
 print(6)
-img3 = cv2.drawMatches(img1,kp1,img2,kp2,good,None,**draw_params)
+img3 = cv2.drawMatches(img1, kp1, img2,kp2,good,None,**draw_params)
+cv2.imshow('test', img3)
 
-plt.imshow(img3, 'gray'),plt.show()
+"""plt.imshow(img3, 'gray'),plt.show()
+"""
