@@ -60,8 +60,9 @@ while 1:
     
     img3 = cv.drawMatchesKnn(img1,kp1,img2,kp2,matches,None,**draw_params)
     print("Matches Drawn")
-    plt.imshow(img3,),plt.show()
-    # cv.imshow('img', img3)
+    # plt.imshow(img3,),plt.show()
+    cv.imshow('img', img3)
+    sleep(.01)
     print("Image Shown")
 # # Initiate ORB detector
 # orb = cv.ORB_create()
