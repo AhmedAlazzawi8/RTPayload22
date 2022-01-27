@@ -8,24 +8,27 @@ import matplotlib.pyplot as plt
 c = cv.VideoCapture(0)
 
 
+# FLANN_INDEX_KDTREE = 1
+# index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+
+# FLANN_INDEX_LSH = 6
+# index_params= dict(algorithm = FLANN_INDEX_LSH,
+#                    table_number = 6, # 12
+#                    key_size = 12,     # 20
+#                    multi_probe_level = 1) #2
+
+# Initiate SIFT detector
+sift = cv.SIFT_create()
+
+# FLANN parameters
 FLANN_INDEX_KDTREE = 1
 index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+search_params = dict(checks=50)   # or pass empty dictionary
 
-FLANN_INDEX_LSH = 6
-index_params= dict(algorithm = FLANN_INDEX_LSH,
-                   table_number = 6, # 12
-                   key_size = 12,     # 20
-                   multi_probe_level = 1) #2
-
-
-
-# Initiate ORB detector
-orb = cv.ORB_create()
-
-# create BFMatcher object
-bf = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
+flann = cv.FlannBasedMatcher(index_params,search_params)
 
 while 1:
+
     _, img1 = c.read()
 
     for i in range(0, 13):
@@ -33,22 +36,66 @@ while 1:
     
     _, img2 = c.read()
 
+    # find the keypoints and descriptors with SIFT
+    kp1, des1 = sift.detectAndCompute(img1,None)
+    kp2, des2 = sift.detectAndCompute(img2,None)
 
-    # find the keypoints and descriptors with ORB
-    kp1, des1 = orb.detectAndCompute(img1,None)
-    kp2, des2 = orb.detectAndCompute(img2,None)
-
-    # Match descriptors.
-    matches = bf.match(des1,des2)
-    # Sort them in the order of their distance.
-    matches = sorted(matches, key = lambda x:x.distance)
-    # Draw first 100 matches.
-    img3 = cv.drawMatches(img1,kp1,img2,kp2,matches[:100],None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-    # plt.imshow(img3),plt.show()
+    matches = flann.knnMatch(des1,des2,k=2)
+    # Need to draw only good matches, so create a mask
+    matchesMask = [[0,0] for i in range(len(matches))]
+    # ratio test as per Lowe's paper
+    for i,(m,n) in enumerate(matches):
+        if m.distance < 0.7*n.distance:
+            matchesMask[i]=[1,0]
+    draw_params = dict(matchColor = (0,255,0),
+                    singlePointColor = (255,0,0),
+                    matchesMask = matchesMask,
+                    flags = cv.DrawMatchesFlags_DEFAULT)
+    img3 = cv.drawMatchesKnn(img1,kp1,img2,kp2,matches,None,**draw_params)
+    # plt.imshow(img3,),plt.show()
     cv.imshow('img', img3)
-    if cv.waitKey(5)==27:
-        break
-cv.destroyAllWindows()
+
+# # Initiate ORB detector
+# orb = cv.ORB_create()
+# # Initiate SIFT detector
+# sift = cv.SIFT_create()
+
+# # create BFMatcher object
+# bf = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
+
+# index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+# search_params = dict(checks=50)   # or pass empty dictionary
+# flann = cv.FlannBasedMatcher(index_params,search_params)
+
+
+# while 1:
+#     _, img1 = c.read()
+
+#     for i in range(0, 13):
+#         c.read()
+    
+#     _, img2 = c.read()
+
+
+#     # find the keypoints and descriptors with ORB
+#     # kp1, des1 = orb.detectAndCompute(img1,None)
+#     # kp2, des2 = orb.detectAndCompute(img2,None)
+
+#     # find the keypoints and descriptors with SIFT
+#     kp1_sift, des1_sift = sift.detectAndCompute(img1,None)
+#     kp2_sift, des2_sift = sift.detectAndCompute(img2,None)
+
+#     # Match descriptors.
+#     matches = bf.match(des1,des2)
+#     # Sort them in the order of their distance.
+#     matches = sorted(matches, key = lambda x:x.distance)
+#     # Draw first 100 matches.
+#     img3 = cv.drawMatches(img1,kp1,img2,kp2,matches[:100],None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+#     # plt.imshow(img3),plt.show()
+#     cv.imshow('img', img3)
+#     if cv.waitKey(5)==27:
+#         break
+# cv.destroyAllWindows()
 
 # while(1):
 #     _,f = c.read()
