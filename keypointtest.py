@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 MIN_MATCH_COUNT = 10
 
 img1 = cv2.imread('Huntsville.jpg',0)          # queryImage
-img2 = cv2.imread('SnowRanch.jpg',0) # trainImage
+img2 = cv2.imread('Huntsville_closer.jpg.png',0) # trainImage
 
 print("1")
 # Initiate SIFT detector
