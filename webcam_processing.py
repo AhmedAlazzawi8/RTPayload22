@@ -28,7 +28,7 @@ bf = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
 while 1:
     _, img1 = c.read()
 
-    for i in range(0, 300):
+    for i in range(0, 27):
         c.read()
     
     _, img2 = c.read()
