@@ -29,7 +29,7 @@ while 1:
     _, img1 = c.read()
 
     for i in range(0, 300):
-    c.read()
+        c.read()
     
     _, img2 = c.read()
 
