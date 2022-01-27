@@ -17,43 +17,34 @@ index_params= dict(algorithm = FLANN_INDEX_LSH,
                    key_size = 12,     # 20
                    multi_probe_level = 1) #2
 
-print(3)
-sleep(1)
-print(2)
-sleep(1)
-print(1)
-sleep(1)
-
-
-  
-_, img1 = c.read()
-
-for i in range(0, 300):
-  c.read()
-  
-_, img2 = c.read()
-
-cv.imshow('good1', img1)
-cv.imshow('good2', img2)
-
-
 
 
 # Initiate ORB detector
 orb = cv.ORB_create()
-# find the keypoints and descriptors with ORB
-kp1, des1 = orb.detectAndCompute(img1,None)
-kp2, des2 = orb.detectAndCompute(img2,None)
 
 # create BFMatcher object
 bf = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
-# Match descriptors.
-matches = bf.match(des1,des2)
-# Sort them in the order of their distance.
-matches = sorted(matches, key = lambda x:x.distance)
-# Draw first 10 matches.
-img3 = cv.drawMatches(img1,kp1,img2,kp2,matches[:10],None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-plt.imshow(img3),plt.show()
+
+while(1):
+    _, img1 = c.read()
+
+    for i in range(0, 300):
+    c.read()
+    
+    _, img2 = c.read()
+
+
+    # find the keypoints and descriptors with ORB
+    kp1, des1 = orb.detectAndCompute(img1,None)
+    kp2, des2 = orb.detectAndCompute(img2,None)
+
+    # Match descriptors.
+    matches = bf.match(des1,des2)
+    # Sort them in the order of their distance.
+    matches = sorted(matches, key = lambda x:x.distance)
+    # Draw first 10 matches.
+    img3 = cv.drawMatches(img1,kp1,img2,kp2,matches[:10],None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    plt.imshow(img3),plt.show()
 
 # while(1):
 #     _,f = c.read()
