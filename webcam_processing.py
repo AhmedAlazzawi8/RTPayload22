@@ -33,6 +33,12 @@ print(1)
 sleep(1)
 _, img2 = c.read()
 
+cv.imshow('good1', img1)
+cv.imshow('good2', img2)
+
+sleep(10)
+
+
 # Initiate ORB detector
 orb = cv.ORB_create()
 # find the keypoints and descriptors with ORB
