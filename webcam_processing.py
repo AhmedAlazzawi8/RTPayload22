@@ -59,12 +59,12 @@ cv2.destroyAllWindows()
 #     orb = cv2.ORB_create(200)
 #     keypoint, des = orb.detectAndCompute(img, None)
 #     img_final = cv2.drawKeypoints(img, keypoint, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-#     cv2.imshow('good', img_final)
+#     cv.imshow('good', img_final)
 
 
-#     if cv2.waitKey(5)==27:
+#     if cv.waitKey(5)==27:
 #         break
-# cv2.destroyAllWindows()
+# cv.destroyAllWindows()
 
 # Thoughts
 # Reverse video, use the last iamge (on the ground) as the one to track,
