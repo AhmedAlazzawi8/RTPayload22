@@ -9,11 +9,11 @@ img2 = cv2.imread('SnowRanch.jpg',0) # trainImage
 
 print("1")
 # Initiate SIFT detector
-sift = cv2.SIFT()
+sift = cv2.SIFT_create()
 print(1.5)
 # find the keypoints and descriptors with SIFT
 kp1, des1 = sift.detectAndCompute(img1,None)
-print(1.75)
+print(1.75 )
 kp2, des2 = sift.detectAndCompute(img2,None)
 
 print("2")
