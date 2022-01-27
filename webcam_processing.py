@@ -44,8 +44,8 @@ while 1:
     matches = sorted(matches, key = lambda x:x.distance)
     # Draw first 10 matches.
     img3 = cv.drawMatches(img1,kp1,img2,kp2,matches[:10],None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-    plt.imshow(img3),plt.show()
-    
+    # plt.imshow(img3),plt.show()
+    cv.imshow('img', img3)
     if cv2.waitKey(5)==27:
         break
 cv2.destroyAllWindows()
