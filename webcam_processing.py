@@ -23,6 +23,10 @@ print(2)
 sleep(1)
 print(1)
 sleep(1)
+
+for i in range(0, 300):
+  c.read()
+  
 _, img1 = c.read()
 
 print(3)
