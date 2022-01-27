@@ -55,7 +55,10 @@ draw_params = dict(matchColor = (0,255,0), # draw matches in green color
                    matchesMask = matchesMask, # draw only inliers
                    flags = 2)
 print(6)
-img3 = cv2.drawMatches(img1, kp1, img2,kp2,good,None,**draw_params)
+# img3 = cv2.drawMatches(img1, kp1, img2,kp2,good,None,**draw_params)
+img3 = img2
+cv2.drawKeypoints(img2, kp2, img3, color=(255,0,0))
+
 cv2.imshow('test', img3)
 
 """plt.imshow(img3, 'gray'),plt.show()
