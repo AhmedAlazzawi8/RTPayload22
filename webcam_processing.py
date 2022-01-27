@@ -28,7 +28,7 @@ bf = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
 while 1:
     _, img1 = c.read()
 
-    for i in range(0, 27):
+    for i in range(0, 13):
         c.read()
     
     _, img2 = c.read()
@@ -42,8 +42,8 @@ while 1:
     matches = bf.match(des1,des2)
     # Sort them in the order of their distance.
     matches = sorted(matches, key = lambda x:x.distance)
-    # Draw first 10 matches.
-    img3 = cv.drawMatches(img1,kp1,img2,kp2,matches[:10],None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    # Draw first 100 matches.
+    img3 = cv.drawMatches(img1,kp1,img2,kp2,matches[:100],None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
     # plt.imshow(img3),plt.show()
     cv.imshow('img', img3)
     if cv.waitKey(5)==27:
