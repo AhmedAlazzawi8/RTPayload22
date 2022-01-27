@@ -42,7 +42,8 @@ if len(good)>MIN_MATCH_COUNT:
     img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
 
 else:
-    print( "Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
+    # print( "Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
+    print( "Not enough matches are found")
     matchesMask = None
     
 draw_params = dict(matchColor = (0,255,0), # draw matches in green color
