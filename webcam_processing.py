@@ -17,10 +17,20 @@ index_params= dict(algorithm = FLANN_INDEX_LSH,
                    key_size = 12,     # 20
                    multi_probe_level = 1) #2
 
-
-
+print(3)
+sleep(1)
+print(2)
+sleep(1)
+print(1)
+sleep(1)
 _, img1 = c.read()
-sleep(5)
+
+print(3)
+sleep(1)
+print(2)
+sleep(1)
+print(1)
+sleep(1)
 _, img2 = c.read()
 # Initiate SIFT detector
 sift = cv.SIFT_create()
