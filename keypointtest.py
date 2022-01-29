@@ -15,26 +15,53 @@ def draw_matches_on_img2(img1, kp1, img2, kp2, matches, color=None):
     else: 
         c = np.random.randint(0,256,3) if len(img1.shape) == 3 else np.random.randint(0,256)
     
+    
+    
     for m in matches:
         cv2.circle(new_img, tuple(np.round(kp2[m.trainIdx].pt).astype(int)), r, c, thickness)
 
     return new_img
 
-def process_matches(img1, kp1, img2, kp2, matches, color=None):
-    new_img = np.zeros(img2.shape, type(img2.flat[0]))  
-    new_img[0:img2.shape[0],0:img2.shape[1]] = img2
-
+def scalePoints(points, kp1, kp2, matches):
     for m in matches:
-        kp2[m.trainIdx].pt
+        img2pt = kp2[m.trainIdx].pt
+        img1pt = kp1[m.queryIdx].pt
+        print(img2pt, "\n", img1pt)
+    # Scale the points from the smaller image to the larger image
+    
+    # I don't think I need the matches param, but I'll see
+    
+    #smaller (closer) image is the number 1
+    #Idea: take the 1st point from image 1 (should be the best match),
+    #    translate all the points to match the corresponding point in image 2.
+    #    Then, scale the points from image 1 to match the second corresponding point in image 2.
+    #    If there is a lot of error, maybe try the scaling on multiple points and average the scale factor, then apply it
+    
+    
+    
+    
+    return points
+    
+    
+    
+    return 
 
-    return new_img
+def process_matches(img1, kp1, img2, kp2, matches):  
+    points = None
+    
+    #for m in matches:
+        #points.append(kp2[m.trainIdx].pt)
+    
+    points = scalePoints(points, kp1, kp2, matches)
+    
+    return points
 
 
 
 MIN_MATCH_COUNT = 1
 
-img1 = cv2.imread('Huntsville_closer.png')      # queryImage
-img2 = cv2.imread('Huntsville.jpg')             # trainImage
+img2 = cv2.imread('pic1.jpg')      # queryImage
+img1 = cv2.imread('pic1_closer.jpg')             # trainImage
 
 # Initiate SIFT detector
 sift = cv2.SIFT_create()
@@ -100,3 +127,4 @@ plt.show()
 
 plt.imshow(img3)
 plt.show()
+process_matches(img1, kp1, img2, kp2, good)
