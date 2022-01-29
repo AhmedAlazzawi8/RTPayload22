@@ -49,22 +49,22 @@ def scalePoints(points, kp1, kp2, matches):
     #      Add the value of the original coordinate to all the others
     
     #----------------------------------------Scaling---------------------------------------
-    img1pt_0 = kp1[match[0].queryIdx].pt
-    img2pt_0 = kp2[match[0].trainIdx].pt
+    smlPt_0 = kp1[match[0].queryIdx].pt
+    bigPt_0 = kp2[match[0].trainIdx].pt
     
-    img1pt_1 = kp1[match[1].queryIdx].pt
-    img2pt_1 = kp2[match[1].trainIdx].pt
+    smlPt_1 = kp1[match[1].queryIdx].pt
+    bigPt_1 = kp2[match[1].trainIdx].pt
     
-    distance1 = ((img1pt_0[0] - img1pt_1[0]) ** 2 + (img1pt_0[1] - img1pt_1[1]) ** 2) ** 0.5
-    distance2 = ((img2pt_0[0] - img2pt_1[0]) ** 2 + (img2pt_0[1] - img2pt_1[1]) ** 2) ** 0.5
+    distance1 = ((smlPt_0[0] - smlPt_1[0]) ** 2 + (smlPt_0[1] - smlPt_1[1]) ** 2) ** 0.5
+    distance2 = ((bigPt_0[0] - bigPt_1[0]) ** 2 + (bigPt_0[1] - bigPt_1[1]) ** 2) ** 0.5
     
     
     
     #Set the first point of smaller image to origin before rotation
     #-----------------------------------------Translation One-----------------------------------
-    img1TranslateBy = kp1[match[0].queryIdx].pt
-    img1pt_0 = (0, 0)
-    img1pt_1 = (img1pt_1[0] - img1TranslateBy[0], img1pt_1[1] - img1TranslateBy[1]) #generalize to all points eventually
+    smlTranslateBy = kp1[match[0].queryIdx].pt
+    smlPt_0 = (0, 0)
+    smlPt_1 = (smlPt_1[0] - smlTranslateBy[0], smlPt_1[1] - smlTranslateBy[1]) #generalize to all points eventually
     
     
     
@@ -72,11 +72,11 @@ def scalePoints(points, kp1, kp2, matches):
     #______________________________________________Scale________________________________________
     scale_factor = distance2/distance1
     
-    img1pt_1 = (img1pt_1[0] * scale_factor, img1pt_1[1] * scale_factor)
-
+    smlPt_1 = (smlPt_1[0] * scale_factor, smlPt_1[1] * scale_factor)
 
     
     #------------------------------------------Rotate-------------------------------------
+    #(1x2)(2x2) =(1x2) img1pts * matrix = bigimgpts
     
     
     #-----------------------------------------Translation Two-----------------------------------
