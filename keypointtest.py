@@ -23,10 +23,10 @@ def draw_matches_on_img2(img1, kp1, img2, kp2, matches, color=None):
     return new_img
 
 def scalePoints(points, kp1, kp2, matches):
-    for m in matches:
-        img2pt = kp2[m.trainIdx].pt
-        img1pt = kp1[m.queryIdx].pt
-        print(img2pt, "\n", img1pt)
+    if len(matches) < 2:
+        print("Error, not enough matches. Two Required, %d given\n" % len(matches))
+    
+    
     # Scale the points from the smaller image to the larger image
     
     # I don't think I need the matches param, but I'll see
@@ -36,6 +36,43 @@ def scalePoints(points, kp1, kp2, matches):
     #    translate all the points to match the corresponding point in image 2.
     #    Then, scale the points from image 1 to match the second corresponding point in image 2.
     #    If there is a lot of error, maybe try the scaling on multiple points and average the scale factor, then apply it
+    
+    
+    #See this!!!: https://math.stackexchange.com/questions/1544147/find-transform-matrix-that-transforms-one-line-segment-to-another
+    #There are 3 steps:
+    #   Scale
+    #      Use distances of points and scale
+    #   Rotate
+    #      use atan2()
+    #      θ=atan2(by−ay,bx−ax)
+    #   Translate
+    #      Add the value of the original coordinate to all the others
+    
+    #----------------------------------------Scaling---------------------------------------
+    img1pt_0 = kp1[match[0].queryIdx].pt
+    img2pt_0 = kp2[match[0].trainIdx].pt
+    
+    img1pt_1 = kp1[match[1].queryIdx].pt
+    img2pt_1 = kp2[match[1].trainIdx].pt
+    
+    distance1 = ((img1pt_0[0] - img1pt_1[0]) ** 2 + (img1pt_0[1] - img1pt_1[1]) ** 2) ** 0.5
+    distance2 = ((img2pt_0[0] - img2pt_1[0]) ** 2 + (img2pt_0[1] - img2pt_1[1]) ** 2) ** 0.5
+    
+    scale_factor = distance2/distance1
+    
+    #Scale all points in img1 by scale factor
+    
+    
+    #Set the first point of smaller image to origin before rotation
+    
+    #------------------------------------------Rotate-------------------------------------
+    
+    
+    #-----------------------------------------Translation-----------------------------------
+    img1TranslateBy = kp1[match[0].queryIdx].pt
+    img1pt_0 = (0, 0)
+    img1pt_1 = (img1pt_1[0] - img1TranslateBy[0], img1pt_1[1] - img1TranslateBy[1]) #generalize to all points eventually
+    
     
     
     
