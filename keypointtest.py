@@ -60,8 +60,9 @@ def scalePoints(points, kp1, kp2, matches):
     
     scale_factor = distance2/distance1
     
-    #Scale all points in img1 by scale factor
+    #Scale all (aside from match 1) points in img1 by scale factor
     
+    img1pt_1 = (img1pt_1[0] * scale_factor, img1pt_1[1] * scale_factor)
     
     #Set the first point of smaller image to origin before rotation
     
