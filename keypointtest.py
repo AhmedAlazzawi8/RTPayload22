@@ -58,21 +58,29 @@ def scalePoints(points, kp1, kp2, matches):
     distance1 = ((img1pt_0[0] - img1pt_1[0]) ** 2 + (img1pt_0[1] - img1pt_1[1]) ** 2) ** 0.5
     distance2 = ((img2pt_0[0] - img2pt_1[0]) ** 2 + (img2pt_0[1] - img2pt_1[1]) ** 2) ** 0.5
     
-    scale_factor = distance2/distance1
     
-    #Scale all (aside from match 1) points in img1 by scale factor
-    
-    img1pt_1 = (img1pt_1[0] * scale_factor, img1pt_1[1] * scale_factor)
     
     #Set the first point of smaller image to origin before rotation
+    #-----------------------------------------Translation One-----------------------------------
+    img1TranslateBy = kp1[match[0].queryIdx].pt
+    img1pt_0 = (0, 0)
+    img1pt_1 = (img1pt_1[0] - img1TranslateBy[0], img1pt_1[1] - img1TranslateBy[1]) #generalize to all points eventually
+    
+    
+    
+    #Scale all (aside from match 1) points in img1 by scale factor
+    #______________________________________________Scale________________________________________
+    scale_factor = distance2/distance1
+    
+    img1pt_1 = (img1pt_1[0] * scale_factor, img1pt_1[1] * scale_factor)
+
+
     
     #------------------------------------------Rotate-------------------------------------
     
     
-    #-----------------------------------------Translation-----------------------------------
-    img1TranslateBy = kp1[match[0].queryIdx].pt
-    img1pt_0 = (0, 0)
-    img1pt_1 = (img1pt_1[0] - img1TranslateBy[0], img1pt_1[1] - img1TranslateBy[1]) #generalize to all points eventually
+    #-----------------------------------------Translation Two-----------------------------------
+    
     
     
     
