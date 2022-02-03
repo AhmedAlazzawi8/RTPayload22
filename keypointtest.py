@@ -17,67 +17,136 @@ def draw_matches_on_img2(img1, kp1, img2, kp2, matches, color=None):
     
     
     
-    for m in matches:
-        cv2.circle(new_img, tuple(np.round(kp2[m.trainIdx].pt).astype(int)), r, c, thickness)
+#     for m in matches:
+#         cv2.circle(new_img, tuple(np.round(kp2[m.trainIdx].pt).astype(int)), r, c, thickness)
+
+    cv2.circle(new_img, tuple(np.round(kp2[matches[0].trainIdx].pt).astype(int)), r, c, thickness)
+    cv2.circle(new_img, tuple(np.round(kp2[matches[1].trainIdx].pt).astype(int)), r, c, thickness)
+
 
     return new_img
 
-def scalePoints(points, kp1, kp2, matches):
+"""
+
+"""
+def scalePoints(kp1, kp2, matches):
+    """Scales the provided points given the matches and keypoints of the two images and returns a new set of points
+        The closer image (subimage) is number 1, the further is 2
+    """
+    
+    
+    
     if len(matches) < 2:
         print("Error, not enough matches. Two Required, %d given\n" % len(matches))
+        raise "ERROR"
+        return None
     
     
-    # Scale the points from the smaller image to the larger image
-    
-    # I don't think I need the matches param, but I'll see
-    
-    #smaller (closer) image is the number 1
-    #Idea: take the 1st point from image 1 (should be the best match),
-    #    translate all the points to match the corresponding point in image 2.
-    #    Then, scale the points from image 1 to match the second corresponding point in image 2.
-    #    If there is a lot of error, maybe try the scaling on multiple points and average the scale factor, then apply it
-    
+    smaller = [] 
+    larger = []
+   
+    for m in matches: #For loop which puts our matches as coordinate pairs into respective arrays
+        smaller.append(kp1[m.queryIdx].pt)
+        larger.append(kp2[m.trainIdx].pt)
     
     #See this!!!: https://math.stackexchange.com/questions/1544147/find-transform-matrix-that-transforms-one-line-segment-to-another
-    #There are 3 steps:
-    #   Scale
-    #      Use distances of points and scale
-    #   Rotate
-    #      use atan2()
-    #      θ=atan2(by−ay,bx−ax)
-    #   Translate
-    #      Add the value of the original coordinate to all the others
+
+#     smaller = [[0,0], [1,0], [2, 0], [2,2]]
+#     larger = [[1,1], [1,3], [1, 5], [-3,5]]
+    
+    
+    x = [evil[0] for evil in smaller]
+    y = [bastard[1] for bastard in smaller]
+    plt.plot(x, y, 'ob')
+    x = [evil[0] for evil in larger]
+    y = [bastard[1] for bastard in larger]
+    plt.plot(x, y, '*r')
+    
+    plt.show()
+    plt.clf()
     
     #----------------------------------------Scaling---------------------------------------
-    smlPt_0 = kp1[match[0].queryIdx].pt
-    bigPt_0 = kp2[match[0].trainIdx].pt
+    smlPt_0 = smaller[0] # X, Y Coords of our best match on the smaller image
+    smlPt_1 = smaller[1] # X, Y coords of our second best match on smaller image
     
-    smlPt_1 = kp1[match[1].queryIdx].pt
-    bigPt_1 = kp2[match[1].trainIdx].pt
-    
-    distance1 = ((smlPt_0[0] - smlPt_1[0]) ** 2 + (smlPt_0[1] - smlPt_1[1]) ** 2) ** 0.5
-    distance2 = ((bigPt_0[0] - bigPt_1[0]) ** 2 + (bigPt_0[1] - bigPt_1[1]) ** 2) ** 0.5
+    bigPt_0 = larger[0] # X, Y Coords of our best match on the larger image
+    bigPt_1 = larger[1] # X, Y Coords of our second best match on the larger image
     
     
+    #Distance calculations for small image vector and big image vector
+    distance1 = np.sqrt(((smlPt_0[0] - smlPt_1[0]) ** 2 + (smlPt_0[1] - smlPt_1[1]) ** 2))
+    distance2 = np.sqrt(((bigPt_0[0] - bigPt_1[0]) ** 2 + (bigPt_0[1] - bigPt_1[1]) ** 2))
     
-    #Set the first point of smaller image to origin before rotation
-    #-----------------------------------------Translation One-----------------------------------
-    smlTranslateBy = kp1[match[0].queryIdx].pt
-    smlPt_0 = (0, 0)
-    smlPt_1 = (smlPt_1[0] - smlTranslateBy[0], smlPt_1[1] - smlTranslateBy[1]) #generalize to all points eventually
-    
-    
-    
-    #Scale all (aside from match 1) points in img1 by scale factor
-    #______________________________________________Scale________________________________________
     scale_factor = distance2/distance1
+        
     
-    smlPt_1 = (smlPt_1[0] * scale_factor, smlPt_1[1] * scale_factor)
+    smaller = np.subtract(smaller, smaller[0]) #Translate smaller image points so best match is origin
+    larger = np.subtract(larger, larger[0]) #Translate larger image points so best match is origin
+    
+    x = [evil[0] for evil in smaller]
+    y = [bastard[1] for bastard in smaller]
+    plt.plot(x, y, 'ob')
+    x = [evil[0] for evil in larger]
+    y = [bastard[1] for bastard in larger]
+    plt.plot(x, y, '*r')
+    
+    plt.show()
+    plt.clf()
+    
+    smaller = np.multiply(smaller, scale_factor) #Scale points
+    
+    x = [evil[0] for evil in smaller]
+    y = [bastard[1] for bastard in smaller]
+    plt.plot(x, y, 'ob')
+    x = [evil[0] for evil in larger]
+    y = [bastard[1] for bastard in larger]
+    plt.plot(x, y, '*r')
+#     
+#     print(larger)
+#     print(smaller)
+#     
+    plt.show()
+    plt.clf()
+    #Rotation
+    
+    
+    
+    theta = np.arctan2([larger[1][1], larger[0][1], smaller[1][1], smaller[0][1]], [larger[1][0], larger[0][0], smaller[1][0], smaller[0][0]])[0]
+    #Rotation Matrix
+    #R = np.array([np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)])
+    
+    print(theta)
+    #print([smaller[1][0]*np.cos(theta[0]) - smaller[1][1]*np.sin(theta[0]), smaller[1][0] * np.sin(theta[0]) + smaller[1][0] * np.cos(theta[0])])
+    smaller = [[war[0]*np.cos(theta) - war[1]*np.sin(theta), war[0] * np.sin(theta) + war[1] * np.cos(theta)] for war in smaller]
+    #smaller = np.matmul(smaller, R)
+    
+    print(larger)
+    print(smaller)
+    x = [evil[0] for evil in smaller]
+    y = [bastard[1] for bastard in smaller]
+    plt.plot(x, y, 'ob')
+    x = [evil[0] for evil in larger]
+    y = [bastard[1] for bastard in larger]
+    plt.plot(x, y, '*r')
+    
+    plt.show()
+    
+    
+    
+    
 
-    
     #------------------------------------------Rotate-------------------------------------
     #(1x2)(2x2) =(1x2) img1pts * matrix = bigimgpts
     
+    #move the big image to origin to calculate rotation properly
+    #big_at_origin = np.subtract()
+    
+    #theta = arccos(dot product/(size**2))
+    
+    #Calculate Rotation angle
+    
+    
+    #Apply rotation
     
     #-----------------------------------------Translation Two-----------------------------------
     
@@ -86,19 +155,14 @@ def scalePoints(points, kp1, kp2, matches):
     
     
     
-    return points
-    
-    
-    
-    return 
+    return smaller
+
+
 
 def process_matches(img1, kp1, img2, kp2, matches):  
-    points = None
+    points = []
     
-    #for m in matches:
-        #points.append(kp2[m.trainIdx].pt)
-    
-    points = scalePoints(points, kp1, kp2, matches)
+    points = scalePoints(kp1, kp2, matches)
     
     return points
 
@@ -127,7 +191,7 @@ matches = flann.knnMatch(des1,des2,k=2)
 # store all the good matches as per Lowe's ratio test.
 # CONSTANT_TEST Determines sensitivity of whats a good match
 # CONSTANT_TEST = 0.7 # <-- Default
-CONSTANT_TEST = 0.8 #Testing, seems good. 
+CONSTANT_TEST = 0.6 #Testing, 8 seems good. 
 
 good = []
 for m,n in matches:
@@ -161,7 +225,7 @@ draw_params = dict(matchColor = (0,255,0), # draw matches in green color
                    matchesMask= None,
                    flags = 2)
 
-img3 = cv2.drawMatches(img1, kp1, img2,kp2,good,None,**draw_params)
+img3 = cv2.drawMatches(img1, kp1, img2,kp2,good[-3:-1],None,**draw_params)
 
 img4 = draw_matches_on_img2(img1, kp1, img2, kp2, good, color=(255,0,0))
 
