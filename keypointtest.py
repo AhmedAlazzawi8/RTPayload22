@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import sys
 from matplotlib import pyplot as plt
 
 # Alternative to drawMatches. We can probably use this to find out how to interpret the matches
@@ -48,6 +49,16 @@ def scalePoints(kp1, kp2, matches):
     for m in matches: #For loop which puts our matches as coordinate pairs into respective arrays
         smaller.append(kp1[m.queryIdx].pt)
         larger.append(kp2[m.trainIdx].pt)
+        
+
+    #These are the two indexes of points from each plot that are used for calculation
+    a = 0
+    b = 1
+    smaller_a = smaller[a] # X, Y Coords of our best match on the smaller image
+    smaller_b = smaller[b] # X, Y coords of our second best match on smaller image
+    
+    larger_a = larger[a] # X, Y Coords of our best match on the larger image
+    larger_b = larger[b] # X, Y Coords of our second best match on the larger image
     
     #See this!!!: https://math.stackexchange.com/questions/1544147/find-transform-matrix-that-transforms-one-line-segment-to-another
 
@@ -58,30 +69,32 @@ def scalePoints(kp1, kp2, matches):
     x = [evil[0] for evil in smaller]
     y = [bastard[1] for bastard in smaller]
     plt.plot(x, y, 'ob')
+
+
     x = [evil[0] for evil in larger]
     y = [bastard[1] for bastard in larger]
     plt.plot(x, y, '*r')
     
+    plt.plot(smaller[a][0], smaller[a][1], 'og')
+    plt.plot(smaller[b][0], smaller[b][1], 'og')
+    plt.plot(larger[a][0], larger[a][1], '*y')
+    plt.plot(larger[b][0], larger[b][1], '*y')
     plt.show()
     plt.clf()
     
     #----------------------------------------Scaling---------------------------------------
-    smlPt_0 = smaller[0] # X, Y Coords of our best match on the smaller image
-    smlPt_1 = smaller[1] # X, Y coords of our second best match on smaller image
     
-    bigPt_0 = larger[0] # X, Y Coords of our best match on the larger image
-    bigPt_1 = larger[1] # X, Y Coords of our second best match on the larger image
     
     
     #Distance calculations for small image vector and big image vector
-    distance1 = np.sqrt(((smlPt_0[0] - smlPt_1[0]) ** 2 + (smlPt_0[1] - smlPt_1[1]) ** 2))
-    distance2 = np.sqrt(((bigPt_0[0] - bigPt_1[0]) ** 2 + (bigPt_0[1] - bigPt_1[1]) ** 2))
+    distance1 = np.sqrt(((smaller[a][0] - smaller[b][0]) ** 2 + (smaller[a][1] - smaller[b][1]) ** 2))
+    distance2 = np.sqrt(((larger[a][0] - larger[b][0]) ** 2 + (larger[a][1] - larger[b][1]) ** 2))
     
     scale_factor = distance2/distance1
         
     
-    smaller = np.subtract(smaller, smaller[0]) #Translate smaller image points so best match is origin
-    larger = np.subtract(larger, larger[0]) #Translate larger image points so best match is origin
+    smaller = np.subtract(smaller, smaller[a]) #Translate smaller image points so best match is origin
+    larger = np.subtract(larger, larger[a]) #Translate larger image points so best match is origin
     
     x = [evil[0] for evil in smaller]
     y = [bastard[1] for bastard in smaller]
@@ -89,6 +102,12 @@ def scalePoints(kp1, kp2, matches):
     x = [evil[0] for evil in larger]
     y = [bastard[1] for bastard in larger]
     plt.plot(x, y, '*r')
+    
+    
+    plt.plot(smaller[a][0], smaller[a][1], 'og')
+    plt.plot(smaller[b][0], smaller[b][1], 'og')
+    plt.plot(larger[a][0], larger[a][1], '*y')
+    plt.plot(larger[b][0], larger[b][1], '*y')
     
     plt.show()
     plt.clf()
@@ -101,24 +120,26 @@ def scalePoints(kp1, kp2, matches):
     x = [evil[0] for evil in larger]
     y = [bastard[1] for bastard in larger]
     plt.plot(x, y, '*r')
-#     
-#     print(larger)
-#     print(smaller)
-#     
+
+    plt.plot(smaller[a][0], smaller[a][1], 'og')
+    plt.plot(smaller[b][0], smaller[b][1], 'og')
+    plt.plot(larger[a][0], larger[a][1], '*y')
+    plt.plot(larger[b][0], larger[b][1], '*y')
+
     plt.show()
     plt.clf()
+   
+   
     #Rotation
     
+    theta = np.arctan2(smaller[b][0], smaller[b][1]) - np.arctan2(larger[b][0], larger[b][1])
     
-    
-    theta = np.arctan2([larger[1][1], larger[0][1], smaller[1][1], smaller[0][1]], [larger[1][0], larger[0][0], smaller[1][0], smaller[0][0]])[0]
-    #Rotation Matrix
-    #R = np.array([np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)])
-    
-    print(theta)
-    #print([smaller[1][0]*np.cos(theta[0]) - smaller[1][1]*np.sin(theta[0]), smaller[1][0] * np.sin(theta[0]) + smaller[1][0] * np.cos(theta[0])])
+#     """
+#     TODO: IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! nevermind :p... :)
+#     Check for divide by zero in the theta calculation when the triangle has an angle of 180 degrees. Otherwise, program may crash
+#     """
+
     smaller = [[war[0]*np.cos(theta) - war[1]*np.sin(theta), war[0] * np.sin(theta) + war[1] * np.cos(theta)] for war in smaller]
-    #smaller = np.matmul(smaller, R)
     
     print(larger)
     print(smaller)
@@ -128,6 +149,12 @@ def scalePoints(kp1, kp2, matches):
     x = [evil[0] for evil in larger]
     y = [bastard[1] for bastard in larger]
     plt.plot(x, y, '*r')
+    
+    plt.plot(smaller[a][0], smaller[a][1], 'og')
+    plt.plot(smaller[b][0], smaller[b][1], 'og')
+    plt.plot(larger[a][0], larger[a][1], '*y')
+    plt.plot(larger[b][0], larger[b][1], '*y')
+    
     
     plt.show()
     
@@ -170,8 +197,12 @@ def process_matches(img1, kp1, img2, kp2, matches):
 
 MIN_MATCH_COUNT = 1
 
-img2 = cv2.imread('pic1.jpg')      # queryImage
-img1 = cv2.imread('pic1_closer.jpg')             # trainImage
+print("Did you enter the image paths as args? do python keypointtest.py <larger> <smaller>")
+
+print(sys.argv[1], sys.argv[2])
+
+img2 = cv2.imread(sys.argv[1])      # queryImage
+img1 = cv2.imread(sys.argv[2])             # trainImage
 
 # Initiate SIFT detector
 sift = cv2.SIFT_create()
@@ -189,9 +220,10 @@ flann = cv2.FlannBasedMatcher(index_params, search_params)
 matches = flann.knnMatch(des1,des2,k=2)
 
 # store all the good matches as per Lowe's ratio test.
+#The lower the value, the less points... I think
 # CONSTANT_TEST Determines sensitivity of whats a good match
 # CONSTANT_TEST = 0.7 # <-- Default
-CONSTANT_TEST = 0.6 #Testing, 8 seems good. 
+CONSTANT_TEST = 0.6 #Testing, .8 seems good. 
 
 good = []
 for m,n in matches:
