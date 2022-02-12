@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import copy
 import sys
 from matplotlib import pyplot as plt
 
@@ -15,185 +16,147 @@ def draw_matches_on_img2(img1, kp1, img2, kp2, matches, color=None):
         c = color
     else: 
         c = np.random.randint(0,256,3) if len(img1.shape) == 3 else np.random.randint(0,256)
-    
-    
-    
-#     for m in matches:
-#         cv2.circle(new_img, tuple(np.round(kp2[m.trainIdx].pt).astype(int)), r, c, thickness)
 
-    cv2.circle(new_img, tuple(np.round(kp2[matches[0].trainIdx].pt).astype(int)), r, c, thickness)
-    cv2.circle(new_img, tuple(np.round(kp2[matches[1].trainIdx].pt).astype(int)), r, c, thickness)
-
+    for m in matches:
+        cv2.circle(new_img, tuple(np.round(kp2[m.trainIdx].pt).astype(int)), r, c, thickness)
 
     return new_img
 
-"""
 
-"""
-def scalePoints(kp1, kp2, matches):
-    """Scales the provided points given the matches and keypoints of the two images and returns a new set of points
-        The closer image (subimage) is number 1, the further is 2
-    """
+
+def calculateError(smaller, larger):
+#    distance1 = np.sqrt(((smaller[a][0] - smaller[b][0]) ** 2 + (smaller[a][1] - smaller[b][1]) ** 2))
+
+    #square each matrix subtract one from other
+    difference = np.add.reduce(np.sqrt(np.add.reduce(np.square(np.subtract(larger,smaller)), 1)), 0)
+    return difference
+
+    
+
+def scalePoints(smaller, larger, a, b):
+
+    #Distance calculations for small image vector and big image vector
+    distance1 = np.sqrt(((smaller[a][0] - smaller[b][0]) ** 2 + (smaller[a][1] - smaller[b][1]) ** 2))
+    distance2 = np.sqrt(((larger[a][0] - larger[b][0]) ** 2 + (larger[a][1] - larger[b][1]) ** 2))
     
     
+    scale_factor = distance2/distance1
+        
     
+    smaller = np.multiply(smaller, scale_factor) #Scale points
+    
+    return smaller
+    
+    
+def rotatePoints(smaller, larger, a, b):    
+    
+    smaller = np.subtract(smaller, smaller[a]) #Translate smaller image points so best match is origin
+    larger = np.subtract(larger, larger[a]) #Translate larger image points so best match is origin
+
+    theta = np.arctan2(smaller[b][0], smaller[b][1]) - np.arctan2(larger[b][0], larger[b][1])
+    smaller = [[war[0]*np.cos(theta) - war[1]*np.sin(theta), war[0] * np.sin(theta) + war[1] * np.cos(theta)] for war in smaller]    
+    
+    return smaller
+
+
+
+def process_matches(smaller, larger, a, b):     
+    smaller_copy = copy.deepcopy(smaller)
+    
+    #Process the points
+    #See this!!!: https://math.stackexchange.com/questions/1544147/find-transform-matrix-that-transforms-one-line-segment-to-another
+    smaller_copy  = scalePoints(smaller_copy, larger, a, b)
+    smaller_copy = rotatePoints(smaller_copy, larger, a, b)
+    smaller_copy = np.add(smaller_copy, larger[a]) #translate back to original points
+    
+    return smaller_copy
+
+
+
+def optimizePointSelection(img1, kp1, img2, kp2, matches):
+    #Check for enough matches
     if len(matches) < 2:
         print("Error, not enough matches. Two Required, %d given\n" % len(matches))
         raise "ERROR"
-        return None
+        return None    
     
     
+    #Split matches into points from each image
     smaller = [] 
     larger = []
    
     for m in matches: #For loop which puts our matches as coordinate pairs into respective arrays
         smaller.append(kp1[m.queryIdx].pt)
         larger.append(kp2[m.trainIdx].pt)
-        
+        if (kp1[m.queryIdx].pt == None) ^ (kp2[m.trainIdx].pt == None):
+            print(":( points don't all have corresponding point")
+    
+    
+    errorList = [] #contains a list of tuples that contain the error and a tuple containing the endpoint indices for the line (ex: [(#, (a,b))])
+    
+    
+    #Choose reference points
+    #These are the two indexes of points that form a line from each plot that are used for calculation
+    
+    for a in range(len(matches)):
+        for b in range(len(matches)):
+            if a == b:
+                continue
+            temp_smaller = process_matches(smaller, larger, a, b)
+            errorList.append((calculateError(temp_smaller, larger), (a,b)))
+            print(calculateError(temp_smaller, larger))
 
-    #These are the two indexes of points from each plot that are used for calculation
-    a = 0
-    b = 1
-    smaller_a = smaller[a] # X, Y Coords of our best match on the smaller image
-    smaller_b = smaller[b] # X, Y coords of our second best match on smaller image
     
-    larger_a = larger[a] # X, Y Coords of our best match on the larger image
-    larger_b = larger[b] # X, Y Coords of our second best match on the larger image
-    
-    #See this!!!: https://math.stackexchange.com/questions/1544147/find-transform-matrix-that-transforms-one-line-segment-to-another
-
-#     smaller = [[0,0], [1,0], [2, 0], [2,2]]
-#     larger = [[1,1], [1,3], [1, 5], [-3,5]]
+    a_optimal, b_optimal = min(errorList)[1]
     
     
+    
+    smaller = process_matches(smaller, larger, a_optimal, b_optimal)
+    
+    print("\nOptimal Error: ", calculateError(smaller, larger))
+    
+    #show results
     x = [evil[0] for evil in smaller]
     y = [bastard[1] for bastard in smaller]
     plt.plot(x, y, 'ob')
-
-
     x = [evil[0] for evil in larger]
     y = [bastard[1] for bastard in larger]
     plt.plot(x, y, '*r')
-    
-    plt.plot(smaller[a][0], smaller[a][1], 'og')
-    plt.plot(smaller[b][0], smaller[b][1], 'og')
-    plt.plot(larger[a][0], larger[a][1], '*y')
-    plt.plot(larger[b][0], larger[b][1], '*y')
+
+    plt.plot(smaller[a_optimal][0], smaller[a_optimal][1], 'og')
+    plt.plot(smaller[b_optimal][0], smaller[b_optimal][1], 'og')
+    plt.plot(larger[a_optimal][0], larger[a_optimal][1], '*y')
+    plt.plot(larger[b_optimal][0], larger[b_optimal][1], '*y')
+
     plt.show()
     plt.clf()
     
-    #----------------------------------------Scaling---------------------------------------
+    a_optimal, b_optimal = max(errorList)[1]
     
     
     
-    #Distance calculations for small image vector and big image vector
-    distance1 = np.sqrt(((smaller[a][0] - smaller[b][0]) ** 2 + (smaller[a][1] - smaller[b][1]) ** 2))
-    distance2 = np.sqrt(((larger[a][0] - larger[b][0]) ** 2 + (larger[a][1] - larger[b][1]) ** 2))
+    smaller = process_matches(smaller, larger, a_optimal, b_optimal)
     
-    scale_factor = distance2/distance1
-        
+    print("\nOptimal Error: ", calculateError(smaller, larger))
     
-    smaller = np.subtract(smaller, smaller[a]) #Translate smaller image points so best match is origin
-    larger = np.subtract(larger, larger[a]) #Translate larger image points so best match is origin
-    
+    #show results
     x = [evil[0] for evil in smaller]
     y = [bastard[1] for bastard in smaller]
     plt.plot(x, y, 'ob')
     x = [evil[0] for evil in larger]
     y = [bastard[1] for bastard in larger]
     plt.plot(x, y, '*r')
-    
-    
-    plt.plot(smaller[a][0], smaller[a][1], 'og')
-    plt.plot(smaller[b][0], smaller[b][1], 'og')
-    plt.plot(larger[a][0], larger[a][1], '*y')
-    plt.plot(larger[b][0], larger[b][1], '*y')
-    
+
+    plt.plot(smaller[a_optimal][0], smaller[a_optimal][1], 'og')
+    plt.plot(smaller[b_optimal][0], smaller[b_optimal][1], 'og')
+    plt.plot(larger[a_optimal][0], larger[a_optimal][1], '*y')
+    plt.plot(larger[b_optimal][0], larger[b_optimal][1], '*y')
+
     plt.show()
     plt.clf()
     
-    smaller = np.multiply(smaller, scale_factor) #Scale points
     
-    x = [evil[0] for evil in smaller]
-    y = [bastard[1] for bastard in smaller]
-    plt.plot(x, y, 'ob')
-    x = [evil[0] for evil in larger]
-    y = [bastard[1] for bastard in larger]
-    plt.plot(x, y, '*r')
-
-    plt.plot(smaller[a][0], smaller[a][1], 'og')
-    plt.plot(smaller[b][0], smaller[b][1], 'og')
-    plt.plot(larger[a][0], larger[a][1], '*y')
-    plt.plot(larger[b][0], larger[b][1], '*y')
-
-    plt.show()
-    plt.clf()
-   
-   
-    #Rotation
-    
-    theta = np.arctan2(smaller[b][0], smaller[b][1]) - np.arctan2(larger[b][0], larger[b][1])
-    
-#     """
-#     TODO: IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! nevermind :p... :)
-#     Check for divide by zero in the theta calculation when the triangle has an angle of 180 degrees. Otherwise, program may crash
-#     """
-
-    smaller = [[war[0]*np.cos(theta) - war[1]*np.sin(theta), war[0] * np.sin(theta) + war[1] * np.cos(theta)] for war in smaller]
-    
-    print(larger)
-    print(smaller)
-    x = [evil[0] for evil in smaller]
-    y = [bastard[1] for bastard in smaller]
-    plt.plot(x, y, 'ob')
-    x = [evil[0] for evil in larger]
-    y = [bastard[1] for bastard in larger]
-    plt.plot(x, y, '*r')
-    
-    plt.plot(smaller[a][0], smaller[a][1], 'og')
-    plt.plot(smaller[b][0], smaller[b][1], 'og')
-    plt.plot(larger[a][0], larger[a][1], '*y')
-    plt.plot(larger[b][0], larger[b][1], '*y')
-    
-    
-    plt.show()
-    
-    
-    
-    
-
-    #------------------------------------------Rotate-------------------------------------
-    #(1x2)(2x2) =(1x2) img1pts * matrix = bigimgpts
-    
-    #move the big image to origin to calculate rotation properly
-    #big_at_origin = np.subtract()
-    
-    #theta = arccos(dot product/(size**2))
-    
-    #Calculate Rotation angle
-    
-    
-    #Apply rotation
-    
-    #-----------------------------------------Translation Two-----------------------------------
-    
-    
-    
-    
-    
-    
-    return smaller
-
-
-
-def process_matches(img1, kp1, img2, kp2, matches):  
-    points = []
-    
-    points = scalePoints(kp1, kp2, matches)
-    
-    return points
-
-
+    return 
 
 MIN_MATCH_COUNT = 1
 
@@ -231,25 +194,7 @@ for m,n in matches:
         good.append(m)
 
 print("There are %d good matches" % len(good))
-# if len(good)>MIN_MATCH_COUNT:
-#     # ERROR with this code vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv This is what was causing the random line
-#     src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
-#     dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
-    
 
-#     M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
-#     matchesMask = mask.ravel().tolist()
-#     h,w = img1.shape[0], img1.shape[1]                  #This line was causing problems, cause the image can be len 3. I modified to fix it
-#     pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-#     dst = cv2.perspectiveTransform(pts,M)
-
-#     img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
-#     
-
-# else:
-#     print( "Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
-#     # print( "Not enough matches are found")
-#     matchesMask = None
     
 draw_params = dict(matchColor = (0,255,0), # draw matches in green color
                    singlePointColor = None,
@@ -269,4 +214,12 @@ plt.show()
 
 plt.imshow(img3)
 plt.show()
-process_matches(img1, kp1, img2, kp2, good)
+optimizePointSelection(img1, kp1, img2, kp2, good)
+
+#Testing error function
+error_test_smaller = [(0,0), (1,1), (3,4)]
+error_test_larger = [(0,0), (1,0), (0,0)]
+
+print("Smaller: ", error_test_smaller, "\nLarger: ", error_test_larger, "\nError: ", calculateError(error_test_smaller, error_test_larger))
+print("It works!!!")
+
