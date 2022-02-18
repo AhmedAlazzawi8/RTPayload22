@@ -3,6 +3,8 @@ import cv2
 import copy
 import sys
 from matplotlib import pyplot as plt
+from PIL import Image
+
 
 # Alternative to drawMatches. We can probably use this to find out how to interpret the matches
 # Source: https://gist.github.com/isker/11be0c50c4f78cad9549
@@ -27,7 +29,7 @@ def draw_matches_on_img2(img1, kp1, img2, kp2, matches, color=None):
 def calculateError(smaller, larger):
 #    distance1 = np.sqrt(((smaller[a][0] - smaller[b][0]) ** 2 + (smaller[a][1] - smaller[b][1]) ** 2))
 
-    #square each matrix subtract one from other
+    #square each matrix subtract one from other, then square root (distances summed)
     difference = np.add.reduce(np.sqrt(np.add.reduce(np.square(np.subtract(larger,smaller)), 1)), 0)
     return difference
 
@@ -45,7 +47,7 @@ def scalePoints(smaller, larger, a, b):
     
     smaller = np.multiply(smaller, scale_factor) #Scale points
     
-    return smaller
+    return smaller, scale_factor
     
     
 def rotatePoints(smaller, larger, a, b):    
@@ -56,7 +58,7 @@ def rotatePoints(smaller, larger, a, b):
     theta = np.arctan2(smaller[b][0], smaller[b][1]) - np.arctan2(larger[b][0], larger[b][1])
     smaller = [[war[0]*np.cos(theta) - war[1]*np.sin(theta), war[0] * np.sin(theta) + war[1] * np.cos(theta)] for war in smaller]    
     
-    return smaller
+    return smaller, theta
 
 
 
@@ -65,11 +67,11 @@ def process_matches(smaller, larger, a, b):
     
     #Process the points
     #See this!!!: https://math.stackexchange.com/questions/1544147/find-transform-matrix-that-transforms-one-line-segment-to-another
-    smaller_copy  = scalePoints(smaller_copy, larger, a, b)
-    smaller_copy = rotatePoints(smaller_copy, larger, a, b)
-    smaller_copy = np.add(smaller_copy, larger[a]) #translate back to original points
+    smaller_copy, scale_factor  = scalePoints(smaller_copy, larger, a, b)
+    smaller_copy, rotate_factor = rotatePoints(smaller_copy, larger, a, b)
+    smaller_copy, translation_factor = np.add(smaller_copy, larger[a]), larger[a] #translate back to original points
     
-    return smaller_copy
+    return smaller_copy, scale_factor, rotate_factor, translation_factor
 
 
 
@@ -99,23 +101,54 @@ def optimizePointSelection(img1, kp1, img2, kp2, matches):
     #These are the two indexes of points that form a line from each plot that are used for calculation
     
     for a in range(len(matches)):
-        for b in range(len(matches)):
+        for b in range(a, len(matches)): #double check the "a," in the range later
             if a == b:
                 continue
-            temp_smaller = process_matches(smaller, larger, a, b)
+            temp_smaller, _, _, _ = process_matches(smaller, larger, a, b)
             errorList.append((calculateError(temp_smaller, larger), (a,b)))
-            print(calculateError(temp_smaller, larger))
+
 
     
     a_optimal, b_optimal = min(errorList)[1]
     
     
     
-    smaller = process_matches(smaller, larger, a_optimal, b_optimal)
+    smaller, scale_factor, rotate_factor, translation_factor = process_matches(smaller, larger, a_optimal, b_optimal)
     
     print("\nOptimal Error: ", calculateError(smaller, larger))
     
     #show results
+       
+    
+    #draw image
+    #plt.imshow(img2)
+    
+    #draw other image with the translation, rotation, scaling, etc
+    
+
+    # dividing height and width by 2 to get the center of the image
+    height, width = img1.shape[:2]
+    # get the center coordinates of the image to create the 2D rotation matrix
+    center = (width/2, height/2)
+    # using cv2.getRotationMatrix2D() to get the rotation matrix
+    rotate_matrix = cv2.getRotationMatrix2D(center=center, angle=-rotate_factor*180/3.1415926, scale=scale_factor)
+    # rotate the image using cv2.warpAffine
+    rotated_image = cv2.warpAffine(src=img1, M=rotate_matrix, dsize=(width, height))
+    
+    
+
+    image = Image.open(sys.argv[1])
+    # logo = Image.open('11.png')
+    # logo = logo.convert("RGBA")
+    image_copy = image.copy()
+
+    #image_copy.paste(logo, position)
+    image_copy.paste(img1, translation_factor, img1)
+    
+    plt.imshow(image_copy)
+
+    #draw points
+    
     x = [evil[0] for evil in smaller]
     y = [bastard[1] for bastard in smaller]
     plt.plot(x, y, 'ob')
@@ -131,11 +164,13 @@ def optimizePointSelection(img1, kp1, img2, kp2, matches):
     plt.show()
     plt.clf()
     
+    
+    
+    
+    #Show worst possible 
     a_optimal, b_optimal = max(errorList)[1]
-    
-    
-    
-    smaller = process_matches(smaller, larger, a_optimal, b_optimal)
+        
+    smaller, scale_factor, rotate_factor, translation_factor = process_matches(smaller, larger, a_optimal, b_optimal)
     
     print("\nOptimal Error: ", calculateError(smaller, larger))
     
