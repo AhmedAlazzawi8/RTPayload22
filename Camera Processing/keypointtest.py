@@ -225,20 +225,58 @@ def showPointsOnImage(points, image):
     plt.show()
     plt.clf()
 
+def draw_points_on_image_cv(points, image):     
+    new_img = np.zeros(image.shape, type(image.flat[0]))  
+    new_img[0:image.shape[0],0:image.shape[1]] = image
+
+    r = 10
+    thickness = 2
+
+    c = np.random.randint(0,256,3) if len(img1.shape) == 3 else np.random.randint(0,256)
+
+    for m in points:
+        cv2.circle(new_img, tuple(np.round(m).astype(int)), r, c, thickness)
+
+    return new_img
 
 
+# print("Did you enter the image paths as args? do python keypointtest.py <larger> <smaller>")
 
-print("Did you enter the image paths as args? do python keypointtest.py <larger> <smaller>")
-
-print(sys.argv[1], sys.argv[2])
-
-
-img2 = cv2.imread(sys.argv[1])      # queryImage
-img1 = cv2.imread(sys.argv[2])             # trainImage
-
-processed_points = findMatchesAndProcess(img2, img1)
+# print(sys.argv[1], sys.argv[2])
 
 
+# img2 = cv2.imread(sys.argv[1])      # queryImage
+# img1 = cv2.imread(sys.argv[2])             # trainImage
 
-showPointsOnImage(processed_points, img2)
+
+cap = cv2.VideoCapture(0)
+
+ret = None
+
+while(not(ret)):
+    ret, prev_img = cap.read()
+print("first taken")
+
+while True:
+    ret,frame = cap.read()
+
+    if ret == True:
+
+        processed_points = findMatchesAndProcess(frame, prev_img)
+        print("Found matches and processed  them, showing them next.")
+        cv2.imshow(draw_points_on_image_cv(processed_points, frame))
+        
+
+        prev_img = frame
+
+        if cv2.waitKey(1) & 0xFF == 27:
+            break
+    else: 
+        break
+
+
+cap.release()
+writer.release()
+cv2.destroyAllWindows()
+
 
