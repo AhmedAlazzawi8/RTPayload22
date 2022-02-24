@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import copy
 import sys
+import time
 from matplotlib import pyplot as plt
 from PIL import Image
 
@@ -37,8 +38,8 @@ def scalePoints(smaller, larger, a, b):
     #Distance calculations for small image vector and big image vector
     distance1 = np.sqrt(((smaller[a][0] - smaller[b][0]) ** 2 + (smaller[a][1] - smaller[b][1]) ** 2))
     distance2 = np.sqrt(((larger[a][0] - larger[b][0]) ** 2 + (larger[a][1] - larger[b][1]) ** 2))
-    
-    
+    if(distance1 == 0):
+        return None, None
     scale_factor = distance2/distance1
         
     
@@ -63,6 +64,8 @@ def process_matches(smaller, larger, a, b):
     
     #See this!!!: https://math.stackexchange.com/questions/1544147/find-transform-matrix-that-transforms-one-line-segment-to-another
     smaller_copy, scale_factor  = scalePoints(smaller_copy, larger, a, b)
+    if(scale_factor == None):
+        return [], None, None, None
     smaller_copy, rotate_factor = rotatePoints(smaller_copy, larger, a, b)
     smaller_copy, translation_factor = np.add(smaller_copy, larger[a]), larger[a] #translate back to original points
     
@@ -74,10 +77,9 @@ def optimizePointSelection(kp1, kp2, matches):
     #Check for enough matches
     if len(matches) < 2:
         print("Error, not enough matches. Two Required, %d given\n" % len(matches))
-        raise "ERROR"
-        return None    
+        return []    
     
-    
+    print("Matches: %d\n" % len(matches))
     #Split matches into points from each image
     smaller = [] 
     larger = []
@@ -99,9 +101,12 @@ def optimizePointSelection(kp1, kp2, matches):
             if a == b:
                 continue
             temp_smaller, _, _, _ = process_matches(smaller, larger, a, b)
+            if(len(temp_smaller) == 0):
+                continue
             errorList.append((calculateError(temp_smaller, larger), (a,b)))
 
-
+    if(len(errorList) == 0):
+        return []
     
     a_optimal, b_optimal = min(errorList)[1]
     
@@ -232,7 +237,7 @@ def draw_points_on_image_cv(points, image):
     r = 10
     thickness = 2
 
-    c = np.random.randint(0,256,3) if len(img1.shape) == 3 else np.random.randint(0,256)
+    c = (0,255,0)
 
     for m in points:
         cv2.circle(new_img, tuple(np.round(m).astype(int)), r, c, thickness)
@@ -251,32 +256,77 @@ def draw_points_on_image_cv(points, image):
 
 cap = cv2.VideoCapture(0)
 
-ret = None
 
-while(not(ret)):
-    ret, prev_img = cap.read()
-print("first taken")
+short_video = []
 
 while True:
     ret,frame = cap.read()
 
     if ret == True:
-
-        processed_points = findMatchesAndProcess(frame, prev_img)
-        print("Found matches and processed  them, showing them next.")
-        cv2.imshow(draw_points_on_image_cv(processed_points, frame))
+        cv2.imshow('test', frame)
         
-
-        prev_img = frame
+        short_video.append(frame)
 
         if cv2.waitKey(1) & 0xFF == 27:
             break
     else: 
         break
-
-
-cap.release()
-writer.release()
+        
+        
 cv2.destroyAllWindows()
 
+prev_img = short_video[0]
 
+cv2.imshow('test1', prev_img)
+
+final_points = []
+
+for frame in short_video[1:]:
+    
+    processed_points = findMatchesAndProcess(frame, prev_img)
+    if(len(processed_points) == 0):
+        continue
+    #print(processed_points)
+    final_points.append(processed_points)
+    cv2.imshow('test2', draw_points_on_image_cv(processed_points, frame))
+    cv2.waitKey(1)
+    
+
+    prev_img = frame
+        
+cap.release()
+cv2.destroyAllWindows()
+
+"""
+
+
+
+
+food
+1.
+fooy afjst od
+
+
+Take video/capture necessary images
+
+Match images to grid
+
+define matches in terms of coordinates w/ respect to grid
+(contingent on matching frame of video or captured image to the grid)
+
+Store the transformation for eah image successively
+
+Determine coordinates of the corners of last image with matches
+
+Apply matches until back to coordinates of original grid
+
+determine which grid square/s contain the last picture's corners
+
+
+
+
+
+
+
+
+"""
