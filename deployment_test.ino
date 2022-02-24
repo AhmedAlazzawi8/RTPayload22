@@ -13,8 +13,8 @@ Adafruit_BMP3XX bmp1;
 static float offset, altitude;
 
 void setup() {
-  pinMode(10, OUTPUT);       // set pin 9 as main charge;
-  digitalWrite(10, HIGH);
+  pinMode(3, OUTPUT);       // set pin 3 as main charge;
+  digitalWrite(3, LOW);
   Serial.begin(115200);
   while (!Serial);
   
@@ -39,9 +39,6 @@ void setup() {
   altitude = bmp1.readAltitude(SEALEVELPRESSURE_HPA);
   delay(500);
   
-  // read initial
-  altitude = bmp1.readAltitude(SEALEVELPRESSURE_HPA);
-  delay(500);
   
   // set offset
   offset = bmp1.readAltitude(SEALEVELPRESSURE_HPA);
@@ -60,7 +57,9 @@ void loop() {
 
   // compare with apogee
   if(altitude >= APOGEE){
-      digitalWrite(10, HIGH);
+      digitalWrite(3, HIGH);
+      delay(4000);
+      digitalWrite(3,LOW);
       while(1);
   }
   
