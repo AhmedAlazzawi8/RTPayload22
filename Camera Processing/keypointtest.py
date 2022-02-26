@@ -31,7 +31,30 @@ def calculateError(smaller, larger):
     #square each matrix subtract one from other, then square root (distances summed)
     return np.add.reduce(np.sqrt(np.add.reduce(np.square(np.subtract(larger,smaller)), 1)), 0)
 
+
+
+
+def scaleX(points, scale_factor):      
+    points = np.multiply(points, scale_factor) #Scale points
+    return points
     
+def rotateX(points, theta):    
+    points = [[war[0]*np.cos(theta) - war[1]*np.sin(theta), war[0] * np.sin(theta) + war[1] * np.cos(theta)] for war in points]    
+    return points
+
+def updatePrev(prevPoints, scale_factor, theta, translation_factor):     
+    result = []
+
+    for p in prevPoints:
+        p = scaleX(p, scale_factor)
+        p = rotateX(p, theta)
+        p = np.add(p, translation_factor)
+        result.append(p)
+    return result
+    
+
+
+
 
 def scalePoints(smaller, larger, a, b):
 
@@ -108,88 +131,13 @@ def optimizePointSelection(kp1, kp2, matches):
     if(len(errorList) == 0):
         return []
     
+
     a_optimal, b_optimal = min(errorList)[1]
-    
-    
-    smaller, scale_factor, rotate_factor, translation_factor = process_matches(smaller, larger, a_optimal, b_optimal)
-    
-    # print("\nOptimal Error: ", calculateError(smaller, larger))
-    
-    # #show results
-       
-    
-    # #draw image
-    # #plt.imshow(img2)
-    
-    # #draw other image with the translation, rotation, scaling, etc
-    
 
-    # # dividing height and width by 2 to get the center of the image
-    # height, width = img1.shape[:2]
-    # # get the center coordinates of the image to create the 2D rotation matrix
-    # center = (width/2, height/2)
-    # # using cv2.getRotationMatrix2D() to get the rotation matrix
-    # rotate_matrix = cv2.getRotationMatrix2D(center=center, angle=-rotate_factor*180/3.1415926, scale=scale_factor)
-    # # rotate the image using cv2.warpAffine
-    # rotated_image = cv2.warpAffine(src=img1, M=rotate_matrix, dsize=(width, height))
     
+    smaller, scale_factor, rotate_factor, translation_factor = process_matches(smaller, larger, a_optimal, b_optimal)    
     
-
-    # image = Image.open(sys.argv[1])
-    # image1 = Image.open(sys.argv[2])
-
-    # image1 = image1.reduce(int(1/scale_factor))
-    # image1 = image1.rotate(-rotate_factor*180/3.1415926, expand=False, fillcolor= 0x00000000)
-    
-    # image.paste(image1, (155, 140))
-    
-    # plt.imshow(image)
-
-    # #draw points
-    
-    # x = [evil[0] for evil in smaller]
-    # y = [bastard[1] for bastard in smaller]
-    # plt.plot(x, y, 'ob')
-    # x = [evil[0] for evil in larger]
-    # y = [bastard[1] for bastard in larger]
-    # plt.plot(x, y, '*r')
-
-    # plt.plot(smaller[a_optimal][0], smaller[a_optimal][1], 'og')
-    # plt.plot(smaller[b_optimal][0], smaller[b_optimal][1], 'og')
-    # plt.plot(larger[a_optimal][0], larger[a_optimal][1], '*y')
-    # plt.plot(larger[b_optimal][0], larger[b_optimal][1], '*y')
-
-    # plt.show()
-    # plt.clf()
-    
-    
-    
-    
-    # #Show worst possible 
-    # a_optimal, b_optimal = max(errorList)[1]
-        
-    # smaller, scale_factor, rotate_factor, translation_factor = process_matches(smaller, larger, a_optimal, b_optimal)
-    
-    # print("\nOptimal Error: ", calculateError(smaller, larger))
-    
-    # #show results
-    # x = [evil[0] for evil in smaller]
-    # y = [bastard[1] for bastard in smaller]
-    # plt.plot(x, y, 'ob')
-    # x = [evil[0] for evil in larger]
-    # y = [bastard[1] for bastard in larger]
-    # plt.plot(x, y, '*r')
-
-    # plt.plot(smaller[a_optimal][0], smaller[a_optimal][1], 'og')
-    # plt.plot(smaller[b_optimal][0], smaller[b_optimal][1], 'og')
-    # plt.plot(larger[a_optimal][0], larger[a_optimal][1], '*y')
-    # plt.plot(larger[b_optimal][0], larger[b_optimal][1], '*y')
-
-    # plt.show()
-    # plt.clf()
-    
-    
-    return smaller
+    return smaller, scale_factor, rotate_factor, translation_factor
 
 
 def findMatchesAndProcess(img2, img1):
@@ -220,15 +168,17 @@ def findMatchesAndProcess(img2, img1):
     
     return optimizePointSelection(kp1, kp2, good_matches)
 
-def showPointsOnImage(points, image):
-    plt.imshow(image)
-    
-    x = [evil[0] for evil in points]
-    y = [bastard[1] for bastard in points]
-    plt.plot(x, y, 'ob')
 
-    plt.show()
-    plt.clf()
+# def showPointsOnImage(points, image):
+#     plt.imshow(image)
+    
+#     x = [evil[0] for evil in points]
+#     y = [bastard[1] for bastard in points]
+#     plt.plot(x, y, 'ob')
+
+#     plt.show()
+#     plt.clf()
+
 
 def draw_points_on_image_cv(points, image):     
     new_img = np.zeros(image.shape, type(image.flat[0]))  
@@ -244,14 +194,25 @@ def draw_points_on_image_cv(points, image):
 
     return new_img
 
+def draw_all_points_on_image_cv(list_of_points, image):     
+    new_img = np.zeros(image.shape, type(image.flat[0]))  
+    new_img[0:image.shape[0],0:image.shape[1]] = image
 
-# print("Did you enter the image paths as args? do python keypointtest.py <larger> <smaller>")
+    r = 3
+    thickness = 1
 
-# print(sys.argv[1], sys.argv[2])
+    c = (0,255,0)
+
+    for points in list_of_points:
+        for m in points:
+            cv2.circle(new_img, tuple(np.round(m).astype(int)), r, c, thickness)
+
+    return new_img
 
 
-# img2 = cv2.imread(sys.argv[1])      # queryImage
-# img1 = cv2.imread(sys.argv[2])             # trainImage
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
 
 
 cap = cv2.VideoCapture(0)
@@ -270,30 +231,43 @@ while True:
         if cv2.waitKey(1) & 0xFF == 27:
             break
     else: 
-        break
-        
+        break     
         
 cv2.destroyAllWindows()
 
-prev_img = short_video[0]
 
-cv2.imshow('test1', prev_img)
+
+
+prev_img = short_video[0]
 
 final_points = []
 
 for frame in short_video[1:]:
     
-    processed_points = findMatchesAndProcess(frame, prev_img)
+    processed_points, scale_factor, rotate_factor, translation_factor = findMatchesAndProcess(frame, prev_img)
+    
     if(len(processed_points) == 0):
         continue
-    #print(processed_points)
+    
+    prevFinal = copy.deepcopy(final_points)
+
+    final_points = updatePrev(final_points, scale_factor, rotate_factor, translation_factor)
     final_points.append(processed_points)
+    
+
+    
+
     cv2.imshow('test2', draw_points_on_image_cv(processed_points, frame))
-    cv2.waitKey(1)
+    cv2.waitKey(50)
+
+    cv2.imshow('All points', draw_all_points_on_image_cv(final_points, frame))
+    cv2.waitKey(50)
     
 
     prev_img = frame
         
+cv2.waitKey(0)
+
 cap.release()
 cv2.destroyAllWindows()
 
@@ -327,6 +301,10 @@ determine which grid square/s contain the last picture's corners
 
 
 
+Necessary from first match is the grid squares defined in terms of coordinates.
 
+Current Issues, needa filter the fisheye
+
+Track matches
 
 """
