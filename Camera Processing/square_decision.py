@@ -19,7 +19,7 @@ def guess(x_coord: int, y_coord:int) -> int:
     foundY = false
     
     xGuess = 13
-    yGuess = 17
+    yGuess = 13
     for i in range(1, 20):
         if( 250 * i > x_coord && !foundX):
             xGuess = i
