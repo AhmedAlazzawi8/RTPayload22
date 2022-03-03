@@ -2,6 +2,22 @@ import sys
 
 import numpy as np
 
+def gen_transform_matrix(translate_x, translate_y, theta, scale_x, scale_y):
+
+    translate_matrix = np.matrix([[1, 0, translate_x], [0, 1, translate_y], [0, 0, 1]])
+    rotation_matrix = np.matrix([[np.cos(theta), -1*np.sin(theta), 0], [np.sin(theta), np.cos(theta), 0], [0, 0, 1]])
+    scale_matrix = np.matrix([[scale_x, 0, 0], [0, scale_y, 0], [0, 0, 1]])
+
+    #scale, rotate, translate but in reverse so translate, rotate, scale is the order to multiply
+
+    transform_matrix = np.matmul(translate_matrix, rotation_matrix)
+
+    return np.matmul(transform_matrix, scale_matrix)
+
+def gen_aggregate_matrix(larger_to_map, smaller_to_larger):
+
+    return np.matmul(smaller_to_larger, larger_to_map)
+
 #20x20 grid
 """
 1,1  | 2,1  | 3,1  | ... | 1, 1
