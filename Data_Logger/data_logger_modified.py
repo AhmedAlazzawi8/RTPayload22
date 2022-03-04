@@ -91,60 +91,60 @@ class Logger:
 		self.file.write(datamessage)
 		self.file.flush()
 		
-	def estimate(self):
-		## DATA_LOAD ##
+	# def estimate(self):
+	# 	## DATA_LOAD ##
 		
-		AccX_Value = np.asarray(AccX)
-		size = len(AccX_Value)
-		textfile.close()
+	# 	AccX_Value = np.asarray(AccX)
+	# 	size = len(AccX_Value)
+	# 	textfile.close()
 		
-		## SET PARAMETERS ##
-		dt = 0.01
-		AccX_Variance = 0.0020
+	# 	## SET PARAMETERS ##
+	# 	dt = 0.01
+	# 	AccX_Variance = 0.0020
 		
-		# F Transmission Matrix
-		F = [[1, dt, 0.*dt**2],
-			 [0, 1,        dt],
-			 [0, 0,         1]]
+	# 	# F Transmission Matrix
+	# 	F = [[1, dt, 0.*dt**2],
+	# 		 [0, 1,        dt],
+	# 		 [0, 0,         1]]
 			 
-		# Observatin Matrix
-		H = [0,0,1]
+	# 	# Observatin Matrix
+	# 	H = [0,0,1]
 		
-		# inital_state_mean
-		X0 = [0,
-			  0,
-			  AccX_Value[0]]
+	# 	# inital_state_mean
+	# 	X0 = [0,
+	# 		  0,
+	# 		  AccX_Value[0]]
 			  
-		# initial_state_covariance 
-		P0 = [[0, 0,             0],
-			  [0, 0,             0],
-			  [0, 0, AccX_Variance]]
+	# 	# initial_state_covariance 
+	# 	P0 = [[0, 0,             0],
+	# 		  [0, 0,             0],
+	# 		  [0, 0, AccX_Variance]]
 			  
-		n.timesteps = Accx_Value.shape[0]
-		n_dim_state = 3
-		filtered_state_means = np.zeros((n_timesteps, n_dim_state))
-		filtered_state_covariance = np.zeroes((n_timesteps, n_dim_state, n_dim_state))
+	# 	n.timesteps = Accx_Value.shape[0]
+	# 	n_dim_state = 3
+	# 	filtered_state_means = np.zeros((n_timesteps, n_dim_state))
+	# 	filtered_state_covariance = np.zeroes((n_timesteps, n_dim_state, n_dim_state))
 		
-		kf = Kalmanfilter(transition_matricies = F,
-						  observation_matricies = H,
-						  transition_covariance = Q,
-						  observation_covariance = R,
-						  initial_state_means = X0,
-						  initial_state_covariance = P0)
+	# 	kf = Kalmanfilter(transition_matricies = F,
+	# 					  observation_matricies = H,
+	# 					  transition_covariance = Q,
+	# 					  observation_covariance = R,
+	# 					  initial_state_means = X0,
+	# 					  initial_state_covariance = P0)
 		
-		# Iterative estimation for each new measurement
-		for t in range(n_timesteps):
-			if t == 0:
-				filtered_state_measn[t] = X0;
-				filtered_state_covariance = P0
-			else:
-				filtered_state_means[t], filtered_state_covariance[t] = {
-					kf.filter_update(
-						filter_state_means[t-1],
-						filter_state_covariance[t-1],
-						AccX_value[t]
-					)
-				)
+	# 	# Iterative estimation for each new measurement
+	# 	for t in range(n_timesteps):
+	# 		if t == 0:
+	# 			filtered_state_measn[t] = X0;
+	# 			filtered_state_covariance = P0
+	# 		else:
+	# 			filtered_state_means[t], filtered_state_covariance[t] = {
+	# 				kf.filter_update(
+	# 					filter_state_means[t-1],
+	# 					filter_state_covariance[t-1],
+	# 					AccX_value[t]
+	# 				)
+	# 			)
 
 	def close_file(self):
 		self.file.close()

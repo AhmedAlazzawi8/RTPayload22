@@ -5,6 +5,7 @@ import sys
 import time
 from matplotlib import pyplot as plt
 from PIL import Image
+import datetime
 
 class Camera:
 
@@ -219,13 +220,19 @@ class Camera:
 ####################################################################################################################
 
     cap = None
-    short_video = None
+    writer = None
+    # short_video = None
 
 
     def init(self):
         self.cap = cv2.VideoCapture(0)
+        
+        width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        self.short_video = []
+        self.writer = cv2.VideoWriter("flight video " + datetime.datetime.now().strftime("%I:%M:%S%p, %B %d, %Y") + ".mp4", cv2.VideoWriter_fourcc(*'MPEG'), 20, (width,height))
+
+        # self.short_video = []
 
 
 
@@ -236,8 +243,8 @@ class Camera:
             # cv2.imshow('test', frame)
             # cv2.waitKey(1)
 
-            
-            self.short_video.append(frame)
+            self.writer.write(frame)
+            # self.short_video.append(frame)
 
 
     def closeWindows(self):        
@@ -246,39 +253,42 @@ class Camera:
 
 
     def runAlgorithm(self):
-        prev_img = self.short_video[0]
+        return
+        # prev_img = self.short_video[0]
 
-        final_points = []
+        # final_points = []
 
-        for frame in self.short_video[1:]:
+        # for frame in self.short_video[1:]:
             
-            processed_points, scale_factor, rotate_factor, translation_factor = self.findMatchesAndProcess(frame, prev_img)
+        #     processed_points, scale_factor, rotate_factor, translation_factor = self.findMatchesAndProcess(frame, prev_img)
             
-            if(len(processed_points) == 0):
-                continue
+        #     if(len(processed_points) == 0):
+        #         continue
             
-            prevFinal = copy.deepcopy(final_points)
+        #     prevFinal = copy.deepcopy(final_points)
 
-            final_points = self.updatePrev(final_points, scale_factor, rotate_factor, translation_factor)
-            final_points.append(processed_points)
-            
-
-            
-
-            cv2.imshow('test2', self.draw_points_on_image_cv(processed_points, frame))
-            cv2.waitKey(50)
-
-            cv2.imshow('All points', self.draw_all_points_on_image_cv(final_points, frame))
-            cv2.waitKey(50)
+        #     final_points = self.updatePrev(final_points, scale_factor, rotate_factor, translation_factor)
+        #     final_points.append(processed_points)
             
 
-            prev_img = frame
             
-        cv2.waitKey(0)
+
+        #     cv2.imshow('test2', self.draw_points_on_image_cv(processed_points, frame))
+        #     cv2.waitKey(50)
+
+        #     cv2.imshow('All points', self.draw_all_points_on_image_cv(final_points, frame))
+        #     cv2.waitKey(50)
+            
+
+        #     prev_img = frame
+            
+        # cv2.waitKey(0)
 
 
     def close(self):
         self.cap.release()
+        self.writer.release()
+
         cv2.destroyAllWindows()
 
     """
