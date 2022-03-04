@@ -49,7 +49,7 @@ class Logger:
 		self.Device_Address = 0x68   # MPU6050 device address
 		
 		# self.MPU_Init()
-		print (" Reading Data of Gyroscope and Accelerometer")
+		#print (" Reading Data of Gyroscope and Accelerometer")
 
 		# I2C setup for BMP
 		i2c = board.I2C()  # uses board.SCL and board.SDA
@@ -69,24 +69,24 @@ class Logger:
 	def data_Collection(self):
 		datamessage = str(datetime.now())+","
 
-		print("Accelerometer (m/s^2): {}".format(self.sensor.acceleration))
-		print("Magnetometer (microteslas): {}".format(self.sensor.magnetic))
-		print("Gyroscope (rad/sec): {}".format(self.sensor.gyro))
-		print("Euler angle: {}".format(self.sensor.euler))
-		print("Quaternion: {}".format(self.sensor.quaternion))
-		print("Linear acceleration (m/s^2): {}".format(self.sensor.linear_acceleration))
-		print("Gravity (m/s^2): {}".format(self.sensor.gravity))
+		# print("Accelerometer (m/s^2): {}".format(self.sensor.acceleration))
+		# print("Magnetometer (microteslas): {}".format(self.sensor.magnetic))
+		# print("Gyroscope (rad/sec): {}".format(self.sensor.gyro))
+		# print("Euler angle: {}".format(self.sensor.euler))
+		# print("Quaternion: {}".format(self.sensor.quaternion))
+		# print("Linear acceleration (m/s^2): {}".format(self.sensor.linear_acceleration))
+		# print("Gravity (m/s^2): {}".format(self.sensor.gravity))
 		
 		datamessage = datamessage + str(self.sensor.acceleration[0]) + "," + str(self.sensor.acceleration[1]) + "," + str(self.sensor.acceleration[2]) + ","
-		datamessage = datamessage + str(self.sensor.magnetic[0]) + "," + str(self.sensor.magnetic[1]) + "," + str(self.sensor.magnetic[2]) + ","
+		# datamessage = datamessage + str(self.sensor.magnetic[0]) + "," + str(self.sensor.magnetic[1]) + "," + str(self.sensor.magnetic[2]) + ","
 		datamessage = datamessage + str(self.sensor.gyro[0]) + "," + str(self.sensor.gyro[1]) + "," + str(self.sensor.gyro[2]) + ","
 		datamessage = datamessage + str(self.sensor.euler[0]) + "," + str(self.sensor.euler[1]) + "," + str(self.sensor.euler[2]) + ","
 		datamessage = datamessage + str(self.sensor.quaternion[0]) + "," + str(self.sensor.quaternion[1]) + "," + str(self.sensor.quaternion[2]) + ","
 		datamessage = datamessage + str(self.sensor.linear_acceleration[0]) + "," + str(self.sensor.linear_acceleration[1]) + "," + str(self.sensor.linear_acceleration[2]) + ","
 		datamessage = datamessage + str(self.sensor.gravity[0]) + "," + str(self.sensor.gravity[1]) + "," + str(self.sensor.gravity[2]) + ","
 		
-		print("Pressure: {:6.4f}  Temperature: {:5.2f} Altitude: {} meters".format(self.bmp.pressure, self.bmp.temperature, self.bmp.altitude))
-		datamessage = datamessage + str(self.bmp.pressure) +"," + str(self.bmp.temperature) +"," + str(self.bmp.altitude) + "\n"
+		# print("Pressure: {:6.4f}  Temperature: {:5.2f} Altitude: {} meters".format(self.bmp.pressure, self.bmp.temperature, self.bmp.altitude))
+		datamessage = datamessage + str(self.bmp.pressure) +"," '''+ str(self.bmp.temperature) +","''' + str(self.bmp.altitude) + "\n"
 
 		self.file.write(datamessage)
 		self.file.flush()

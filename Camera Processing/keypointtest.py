@@ -8,6 +8,9 @@ from PIL import Image
 
 class Camera:
 
+    def __init__(self):
+        self.init()
+
     # Alternative to drawMatches. We can probably use this to find out how to interpret the matches
     # Source: https://gist.github.com/isker/11be0c50c4f78cad9549
     def draw_matches_on_img2(self, img1, kp1, img2, kp2, matches, color=None):     
@@ -230,12 +233,14 @@ class Camera:
         ret,frame = self.cap.read()
 
         if ret == True:
-            cv2.imshow('test', frame)
+            # cv2.imshow('test', frame)
+            # cv2.waitKey(1)
+
             
             self.short_video.append(frame)
 
 
-    def closeWindows():        
+    def closeWindows(self):        
         cv2.destroyAllWindows()
 
 
