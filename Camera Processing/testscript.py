@@ -3,8 +3,8 @@ import cv2
 import copy
 import sys
 import time
-import undistort.py as undistort
-import square_decision.py as square_decision
+from undistort import undistort
+#from square_decision as square_decision
 from matplotlib import pyplot as plt
 from PIL import Image
 import datetime
