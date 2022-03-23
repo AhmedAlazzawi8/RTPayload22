@@ -18,21 +18,21 @@ def undistort(img):
     
     return undistorted_img
 
+if __name__ == "__main__":
+    while True:
+        ret,frame = cap.read()
 
-while True:
-    ret,frame = cap.read()
+        if ret == True:
 
-    if ret == True:
+            cv2.imshow('distorted', frame)
 
-        cv2.imshow('distorted', frame)
+            cv2.imshow("undistorted", undistort(frame))
 
-        cv2.imshow("undistorted", undistort(frame))
-
-        if cv2.waitKey(1) & 0xFF == 27:
+            if cv2.waitKey(1) & 0xFF == 27:
+                break
+        else: 
             break
-    else: 
-        break
 
 
-cap.release()
-cv2.destroyAllWindows()
+    cap.release()
+    cv2.destroyAllWindows()
