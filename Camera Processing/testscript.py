@@ -39,12 +39,28 @@ if __name__ == "__main__":
 
     cap.release()
 
-    surf = cv2.xfeatures2d.SURF_create(400)
-
-    for i in range(0, img_counter):
+    #surf = cv2.xfeatures2d.SURF_create(400)
+    sift = cv2.SIFT_create()
+    print(cv2.__version__)
+        # find the keypoints and descriptors with SIFT
+        #kp1, des1 = sift.detectAndCompute(img1,None)
+        #kp2, des2 = sift.detectAndCompute(img2,None) 
+    pointsAndDescriptors = []
+    for i in range(0, 2):
         img_name = "opencv_frame_{}.png".format(i)
         img = cv2.imread(img_name,0)
-        kp, des = surf.detectAndCompute(img,None)
-        print(len(kp))
+        kp, des = sift.detectAndCompute(img,None)
+        pointsAndDescriptors.append((kp, des))
+        #print(len(kp))
+
+    FLANN_INDEX_KDTREE = 1
+    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+    search_params = dict(checks = 50)
+
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+    print(len(pointsAndDescriptors))
+    matches = flann.knnMatch(pointsAndDescriptors[0][1], pointsAndDescriptors[1][1], k=2)
+    
+    
 
     cv2.destroyAllWindows()
