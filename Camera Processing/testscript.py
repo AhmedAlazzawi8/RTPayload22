@@ -39,4 +39,12 @@ if __name__ == "__main__":
 
     cap.release()
 
+    surf = cv2.xfeatures2d.SURF_create(400)
+
+    for i in range(0, img_counter):
+        img_name = "opencv_frame_{}.png".format(i)
+        img = cv2.imread(img_name,0)
+        kp, des = surf.detectAndCompute(img,None)
+        print(len(kp))
+
     cv2.destroyAllWindows()
