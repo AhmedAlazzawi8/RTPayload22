@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 
 
-cap = cv2.VideoCapture(0)
 
 # You should replace these 3 lines with the output in calibration step
 
@@ -19,6 +18,8 @@ def undistort(img):
     return undistorted_img
 
 if __name__ == "__main__":
+    cap = cv2.VideoCapture(0)
+
     while True:
         ret,frame = cap.read()
 

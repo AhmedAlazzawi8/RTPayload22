@@ -11,17 +11,18 @@ import datetime
 
 
 if __name__ == "__main__":
-    cam = cv2.VideoCapture(0)
-
+    cap = cv2.VideoCapture(0)
+    #print("What the fuck")
     cv2.namedWindow("test")
 
     img_counter = 0
 
     while True:
-        ret, frame = cam.read()
-        if not ret:
-            print("failed to grab frame")
-            break
+        ret, frame = cap.read()
+        #if not ret:
+         #   print("failed to grab frame")
+          #  continue
+        frame = undistort(frame)
         cv2.imshow("test", frame)
 
         k = cv2.waitKey(1)
@@ -36,6 +37,6 @@ if __name__ == "__main__":
             print("{} written!".format(img_name))
             img_counter += 1
 
-    cam.release()
+    cap.release()
 
     cv2.destroyAllWindows()
