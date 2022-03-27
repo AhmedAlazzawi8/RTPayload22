@@ -8,6 +8,7 @@ from square_decision import gen_fixed_coords, gen_scale_factor, gen_theta, gen_t
 from matplotlib import pyplot as plt
 from PIL import Image
 import datetime
+import math
 
 
 if __name__ == "__main__":
@@ -38,7 +39,7 @@ if __name__ == "__main__":
             img_counter += 1
 
     cap.release()
-
+    
     #surf = cv2.xfeatures2d.SURF_create(400)
     sift = cv2.SIFT_create()
     print(cv2.__version__)
@@ -46,8 +47,8 @@ if __name__ == "__main__":
         #kp1, des1 = sift.detectAndCompute(img1,None)
         #kp2, des2 = sift.detectAndCompute(img2,None) 
     pointsAndDescriptors = []
-    for i in range(0, 2):
-        img_name = "opencv_frame_{}.png".format(i)
+    for i in range(1, 3):
+        img_name = "{}.jpg".format(i)
         img = cv2.imread(img_name,0)
         kp, des = sift.detectAndCompute(img,None)
         pointsAndDescriptors.append((kp, des))
@@ -63,8 +64,9 @@ if __name__ == "__main__":
     #print(matches)
     
     good_matches = []
-    for m,n in matches:
-        if m.distance < 0.6*n.distance:
+    for i, (m,n) in enumerate(matches):
+        if m.distance < 0.3*n.distance:
+            print(m)
             good_matches.append(m)
      
 
@@ -87,7 +89,7 @@ if __name__ == "__main__":
     (translate_x_small, translate_y_small) = from_to[list(from_to.keys())[0]]
     
     calculationCoords = gen_fixed_coords(from_to, translate_x, translate_y, translate_x_small, translate_y_small)
-    print(calculationCoords)
+    #print(calculationCoords)
     scaleFactor = gen_scale_factor(calculationCoords)
     theta = gen_theta(calculationCoords)
     #print(smaller)
@@ -98,16 +100,34 @@ if __name__ == "__main__":
     transformed = []
     avgDistance = 0
     print(smallToLarge)
+    print(list(from_to.keys())[0], from_to[list(from_to.keys())[0]])
+    print(list(from_to.keys())[0], np.matmul(smallToLarge, np.array([[from_to[list(from_to.keys())[0]][0]], [from_to[list(from_to.keys())[0]][1]], [1]])   ))
     for key in from_to.keys():
         #print(np.matmul( smallToLarge, np.array([[from_to[key][0]],[ from_to[key][1]], [1]])))
         transformed.append(np.matmul( smallToLarge, np.array([[from_to[key][0]],[ from_to[key][1]], [1]])))
 
-    #for i in range(len(transformed)):
+    for i in range(len(transformed)):
         #transformed[i]
-        #print(list(from_to.keys())[i], transformed[i])
+        print("\n\n")
+        print(list(from_to.keys())[i], transformed[i])
+        print("\n")
+        print()
         #print(np.sqrt((list(from_to.keys())[i][0] -transformed[i][0][0] )** 2 + (list(from_to.keys())[i][1] - transformed[i][1][0]) ** 2))
         #avgDistance = avgDistance + np.sqrt((list(from_to.keys())[i][0] -transformed[i][0][0] )** 2 + (list(from_to.keys())[i][1] - transformed[i][1][0]) ** 2)
     
     #print(avgDistance/ range(len(list(from_to.keys()))))
+    (coordx1, coordy1) = list(from_to.keys())[1]
+    (coordx2, coordy2) = from_to[list(from_to.keys())[1]]
 
+    testCoords = np.array([[500], [500], [1]])
+    testCoords = np.matmul(smallToLarge, testCoords)
+    print("test coords", testCoords)
+    img = cv2.imread("1.jpg")
+    #img[coordsx:coordsx+1,coordy:coordy+1] = (0,0,0)
+    img = cv2.circle(img, (math.floor(598), math.floor(534)), 7, (0, 0, 255), 5)
+    cv2.imshow("thing", img)
+    img2 = cv2.imread("2.jpg")
+    img2 = cv2.circle(img2, (math.floor(500), math.floor(500)), 7, (0, 0, 255), 5)
+    cv2.imshow("thing2", img2)
+    cv2.waitKey(0)
     cv2.destroyAllWindows()

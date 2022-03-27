@@ -38,10 +38,11 @@ def gen_transform_matrix(translate_x, translate_y, theta, scale_factor, translat
 
     #scale, rotate, translate but in reverse so translate, rotate, scale is the order to multiply
 
-    transform_matrix = np.matmul(translate_matrix, rotation_matrix)
+    transform_matrix = np.matmul(translate_matrix_2, translate_matrix)
+    transform_matrix = np.matmul(transform_matrix, rotation_matrix)
     transform_matrix = np.matmul(transform_matrix, scale_matrix)
     #print("\nTransform matrix before multiplying by scale: ", transform_matrix, "\n")
-    return np.matmul(transform_matrix, translate_matrix_2)
+    return transform_matrix #np.matmul(transform_matrix, translate_matrix_2)
 
 def gen_aggregate_matrix(larger_to_map, smaller_to_larger):
 
