@@ -2,18 +2,46 @@ import sys
 
 import numpy as np
 
-def gen_transform_matrix(translate_x, translate_y, theta, scale_factor):
+def gen_fixed_coords(coordDict, translate_x, translate_y, translate_x_small, translate_y_small):
+    fixedCoords = {}
+    for key in coordDict.keys():
+        fixedCoords[(key[0]-translate_x, key[1]-translate_y)] = (coordDict[key][0] - translate_x_small, coordDict[key][1] - translate_y_small)
+    
+    return fixedCoords
+
+def gen_scale_factor(coordDict):
+    (xLarge, yLarge) = list(coordDict.keys())[1]
+    (xSmall, ySmall) = coordDict[list(coordDict.keys())[1]]
+
+    largeDist = np.sqrt((xLarge ** 2 + yLarge **2))  
+    smallDist = np.sqrt((xSmall ** 2 + ySmall ** 2))
+
+    scaleFactor = largeDist / smallDist
+    return scaleFactor
+    # scaledCoords = {}
+    # for key in coordDict.keys():
+    #     scaledCoords[list(key)] = np.array([coordDict[key][0] * scaleFactor, coordDict[key][1] * scaleFactor])
+    
+    # return scaledCoords
+
+def gen_theta(fixedCoords):
+    largerCoords = list(fixedCoords.keys())
+    theta = np.arctan2(fixedCoords[list(fixedCoords.keys())[1]][0], fixedCoords[list(fixedCoords.keys())[1]][1]) - np.arctan2(list(fixedCoords.keys())[1][0], list(fixedCoords.keys())[1][1])
+    return theta
+
+def gen_transform_matrix(translate_x, translate_y, theta, scale_factor, translate_x_large, translate_y_large):
 
     translate_matrix = np.matrix([[1, 0, translate_x], [0, 1, translate_y], [0, 0, 1]])
     rotation_matrix = np.matrix([[np.cos(theta), -1*np.sin(theta), 0], [np.sin(theta), np.cos(theta), 0], [0, 0, 1]])
     scale_matrix = np.matrix([[scale_factor, 0, 0], [0, scale_factor, 0], [0, 0, 1]])
+    translate_matrix_2 = np.matrix([[1, 0, translate_x_large], [0, 1, translate_y_large], [0, 0, 1]])
 
     #scale, rotate, translate but in reverse so translate, rotate, scale is the order to multiply
 
     transform_matrix = np.matmul(translate_matrix, rotation_matrix)
-    
-    print("\nTransform matrix before multiplying by scale: ", transform_matrix, "\n")
-    return np.matmul(transform_matrix, scale_matrix)
+    transform_matrix = np.matmul(transform_matrix, scale_matrix)
+    #print("\nTransform matrix before multiplying by scale: ", transform_matrix, "\n")
+    return np.matmul(transform_matrix, translate_matrix_2)
 
 def gen_aggregate_matrix(larger_to_map, smaller_to_larger):
 
@@ -41,6 +69,7 @@ def guess(x_coord: float, y_coord: float) -> int:
     
     xGuess = 13
     yGuess = 13
+
     for i in range(1, 20):
         if( 250 * i > float(x_coord) and not foundX):
             xGuess = i

@@ -4,7 +4,7 @@ import copy
 import sys
 import time
 from undistort import undistort
-#from square_decision as square_decision
+from square_decision import gen_fixed_coords, gen_scale_factor, gen_theta, gen_transform_matrix
 from matplotlib import pyplot as plt
 from PIL import Image
 import datetime
@@ -60,7 +60,54 @@ if __name__ == "__main__":
     flann = cv2.FlannBasedMatcher(index_params, search_params)
     print(len(pointsAndDescriptors))
     matches = flann.knnMatch(pointsAndDescriptors[0][1], pointsAndDescriptors[1][1], k=2)
+    #print(matches)
     
+    good_matches = []
+    for m,n in matches:
+        if m.distance < 0.6*n.distance:
+            good_matches.append(m)
+     
+
+    from_to = {}
+
+    for m in good_matches: #For loop which puts our matches as coordinate pairs into respective arrays
+        from_to[pointsAndDescriptors[0][0][m.queryIdx].pt] = pointsAndDescriptors[1][0][m.trainIdx].pt
+        #smaller.append(pointsAndDescriptors[0][0][m.queryIdx].pt)
+        #larger.append(pointsAndDescriptors[1][0][m.trainIdx].pt)
+        # if (pointsAndDescriptors[0][0][m.queryIdx].pt == None) ^ (pointsAndDescriptors[1][0][m.trainIdx].pt == None):
+        #     print(":( points don't all have corresponding point")
     
+    #TODO Sort from_to based on distance so best match is first key pair, second best is second etc
+
+    ###
+    #Larger image is always first, coordinates on larger image are key to coords on smaller image
+
+    (translate_x, translate_y) = list(from_to.keys())[0] 
+
+    (translate_x_small, translate_y_small) = from_to[list(from_to.keys())[0]]
+    
+    calculationCoords = gen_fixed_coords(from_to, translate_x, translate_y, translate_x_small, translate_y_small)
+    print(calculationCoords)
+    scaleFactor = gen_scale_factor(calculationCoords)
+    theta = gen_theta(calculationCoords)
+    #print(smaller)
+    #print(larger)
+
+    smallToLarge = gen_transform_matrix(-translate_x_small, -translate_y_small, theta, scaleFactor, translate_x, translate_y)
+
+    transformed = []
+    avgDistance = 0
+    print(smallToLarge)
+    for key in from_to.keys():
+        #print(np.matmul( smallToLarge, np.array([[from_to[key][0]],[ from_to[key][1]], [1]])))
+        transformed.append(np.matmul( smallToLarge, np.array([[from_to[key][0]],[ from_to[key][1]], [1]])))
+
+    #for i in range(len(transformed)):
+        #transformed[i]
+        #print(list(from_to.keys())[i], transformed[i])
+        #print(np.sqrt((list(from_to.keys())[i][0] -transformed[i][0][0] )** 2 + (list(from_to.keys())[i][1] - transformed[i][1][0]) ** 2))
+        #avgDistance = avgDistance + np.sqrt((list(from_to.keys())[i][0] -transformed[i][0][0] )** 2 + (list(from_to.keys())[i][1] - transformed[i][1][0]) ** 2)
+    
+    #print(avgDistance/ range(len(list(from_to.keys()))))
 
     cv2.destroyAllWindows()
