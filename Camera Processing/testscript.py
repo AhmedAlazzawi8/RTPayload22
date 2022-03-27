@@ -135,18 +135,34 @@ if __name__ == "__main__":
     testCoords[0] = testCoords[0] * scaleFactor
     testCoords[1] = testCoords[1] * scaleFactor
     
-    testMat2 = gen_transform_matrix(scale_factor=scaleFactor)
+    testMat2 = gen_transform_matrix(translate_x = -coordxTest, translate_y = -coordyTest, scale_factor=scaleFactor)
+    print("\nChecking for scale")
+    print("\nManual Test Coords: ", testCoords)
+    print("\nGenerated testMatrix: ", testMat2)
+    print("\nApplied test matrix: ", np.matmul(testMat2, testCoordsOG))
+
 
     testCoords[0] = testCoords[0]*np.cos(theta) - testCoords[1]*np.sin(theta)
     testCoords[1] = testCoords[0] * np.sin(theta) + testCoords[1] * np.cos(theta)
 
+
+    print("\nChecking Rotation, theta: ", theta)
+    print("\nManual test Coords", testCoords)
+    testRot = gen_transform_matrix(translate_x= -coordxTest, translate_y= - coordyTest, scale_factor = scaleFactor, theta=theta)
+    print("\nGenerated Matrix: ", testRot)
+    print("\nApplied Test Matrix: ", np.matmul(testRot, testCoordsOG))
+    
     testCoords[0] = testCoords[0] + list(from_to.keys())[0][0]
     testCoords[1] = testCoords[1] + list(from_to.keys())[0][1]
 
-    print("Manual test Coords", testCoords)
-    
-    testCoords = np.matmul(smallToLarge, testCoords)
-    print("test coords", testCoords)
+    print("Manual coords final translation: ", testCoords)
+    testFinal = gen_transform_matrix(translate_x= -coordxTest, translate_y= - coordyTest, scale_factor = scaleFactor, theta=theta,
+     translate_x_large=list(from_to.keys())[0][0], translate_y_large=list(from_to.keys())[0][1])
+
+    print("\nGenerated matrix: ", testFinal)
+    print("\nApplied matrix: ", np.matmul(testFinal, testCoordsOG))
+    #testCoords = np.matmul(smallToLarge, testCoords)
+    #print("test coords", testCoords)
     img = cv2.imread("1.jpg")
     #img[coordsx:coordsx+1,coordy:coordy+1] = (0,0,0)
     img = cv2.circle(img, (math.floor(618), math.floor(706)), 7, (0, 0, 255), 5)
