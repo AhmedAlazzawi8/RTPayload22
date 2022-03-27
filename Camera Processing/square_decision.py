@@ -47,9 +47,9 @@ def gen_transform_matrix(translate_x=0, translate_y=0, theta=0, scale_factor=1, 
     #print("\nTransform matrix before multiplying by scale: ", transform_matrix, "\n")
     return np.matmul(translate_matrix_2, transform_matrix)
 
-def gen_aggregate_matrix(larger_to_map, smaller_to_larger):
+def gen_aggregate_matrix( toMap, local):
 
-    return np.matmul(smaller_to_larger, larger_to_map)
+    return np.matmul(toMap, local)
 
 #20x20 grid
 """
