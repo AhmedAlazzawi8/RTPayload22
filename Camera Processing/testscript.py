@@ -4,7 +4,7 @@ import copy
 import sys
 import time
 from undistort import undistort
-from square_decision import gen_fixed_coords, gen_scale_factor, gen_theta, gen_transform_matrix
+from square_decision import gen_aggregate_matrix, gen_fixed_coords, gen_scale_factor, gen_theta, gen_transform_matrix
 from matplotlib import pyplot as plt
 from PIL import Image
 import datetime
@@ -119,12 +119,37 @@ if __name__ == "__main__":
     (coordx1, coordy1) = list(from_to.keys())[1]
     (coordx2, coordy2) = from_to[list(from_to.keys())[1]]
 
-    testCoords = np.array([[500], [500], [1]])
+    CONSTX = 500
+    CONSTY = 500
+    #testCoords = np.array([[CONSTX], [CONSTY], [1]])
+    testCoordsOG = np.array([[CONSTX], [CONSTY], [1]])
+    (coordxTest, coordyTest) = from_to[list(from_to.keys())[0]]
+
+    print("test gen transform no trans", gen_transform_matrix())
+    testCoords = [CONSTX - coordxTest, CONSTY - coordyTest, 1] #Small image coords
+    
+    testMat1 = gen_transform_matrix(translate_x=-coordxTest, translate_y=-coordyTest)
+    print("First transform testCoords:", testCoords, "\nGenerated Matrix: ", testMat1, "\nMatrix applied: ", np.matmul(testMat1, testCoordsOG))
+    seqMatCoords = np.matmul(testMat1, testCoordsOG)
+    #testMat1 = gen_aggregate_matrix
+    testCoords[0] = testCoords[0] * scaleFactor
+    testCoords[1] = testCoords[1] * scaleFactor
+    
+    testMat2 = gen_transform_matrix(scale_factor=scaleFactor)
+
+    testCoords[0] = testCoords[0]*np.cos(theta) - testCoords[1]*np.sin(theta)
+    testCoords[1] = testCoords[0] * np.sin(theta) + testCoords[1] * np.cos(theta)
+
+    testCoords[0] = testCoords[0] + list(from_to.keys())[0][0]
+    testCoords[1] = testCoords[1] + list(from_to.keys())[0][1]
+
+    print("Manual test Coords", testCoords)
+    
     testCoords = np.matmul(smallToLarge, testCoords)
     print("test coords", testCoords)
     img = cv2.imread("1.jpg")
     #img[coordsx:coordsx+1,coordy:coordy+1] = (0,0,0)
-    img = cv2.circle(img, (math.floor(598), math.floor(534)), 7, (0, 0, 255), 5)
+    img = cv2.circle(img, (math.floor(618), math.floor(706)), 7, (0, 0, 255), 5)
     cv2.imshow("thing", img)
     img2 = cv2.imread("2.jpg")
     img2 = cv2.circle(img2, (math.floor(500), math.floor(500)), 7, (0, 0, 255), 5)

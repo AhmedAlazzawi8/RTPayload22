@@ -29,7 +29,7 @@ def gen_theta(fixedCoords):
     theta = np.arctan2(fixedCoords[list(fixedCoords.keys())[1]][0], fixedCoords[list(fixedCoords.keys())[1]][1]) - np.arctan2(list(fixedCoords.keys())[1][0], list(fixedCoords.keys())[1][1])
     return theta
 
-def gen_transform_matrix(translate_x, translate_y, theta, scale_factor, translate_x_large, translate_y_large):
+def gen_transform_matrix(translate_x=0, translate_y=0, theta=0, scale_factor=1, translate_x_large=0, translate_y_large=0):
 
     translate_matrix = np.matrix([[1, 0, translate_x], [0, 1, translate_y], [0, 0, 1]])
     rotation_matrix = np.matrix([[np.cos(theta), -1*np.sin(theta), 0], [np.sin(theta), np.cos(theta), 0], [0, 0, 1]])
@@ -38,11 +38,12 @@ def gen_transform_matrix(translate_x, translate_y, theta, scale_factor, translat
 
     #scale, rotate, translate but in reverse so translate, rotate, scale is the order to multiply
 
-    transform_matrix = np.matmul(translate_matrix_2, translate_matrix)
-    transform_matrix = np.matmul(transform_matrix, rotation_matrix)
+    #transform_matrix = np.matmul(translate_matrix_2, translate_matrix)
+    transform_matrix = np.matmul(translate_matrix, rotation_matrix)
     transform_matrix = np.matmul(transform_matrix, scale_matrix)
+
     #print("\nTransform matrix before multiplying by scale: ", transform_matrix, "\n")
-    return transform_matrix #np.matmul(transform_matrix, translate_matrix_2)
+    return np.matmul(transform_matrix, translate_matrix_2)
 
 def gen_aggregate_matrix(larger_to_map, smaller_to_larger):
 
