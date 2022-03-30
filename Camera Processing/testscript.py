@@ -13,6 +13,12 @@ import math
 CONSTX = 500
 CONSTY = 500
 
+SMALLEST = "3.jpg"
+
+MIDDLEST = "2.jpg"
+
+BIGGEST = "1.jpg"
+
 def sanityCheck():
     sift = cv2.SIFT_create()
     print(cv2.__version__)
@@ -214,25 +220,26 @@ if __name__ == "__main__":
     #surf = cv2.xfeatures2d.SURF_create(400)
    
     testCoordsOG = np.array([[CONSTX], [CONSTY], [1]])
-    twoToOne = image_registration_matrix("1.jpg", "2.jpg")
-    threeToTwo = image_registration_matrix("2.jpg", "3.jpg")
+    twoToOne = image_registration_matrix(BIGGEST, MIDDLEST)
+    threeToTwo = image_registration_matrix(MIDDLEST, SMALLEST)
     threeToOne = gen_aggregate_matrix(twoToOne, threeToTwo)
 
     #print("\n\nGenerated matrix registration: ", np.matmul(twoToOne, testCoordsOG))
     
 
-    img3 = cv2.imread("simple3.jpg")
+    img3 = cv2.imread(SMALLEST)
     img3 = cv2.circle(img3, (math.floor(CONSTX), math.floor(CONSTY)), 7, (255, 0, 0), 5)
     cv2.imshow("thing3", img3)
 
 
 
     fromThree = np.matmul(threeToTwo, testCoordsOG)
+    #print(fromThree)
     #print(fromThree[0, 0])
     #print(fromThree[1, 0])
 
 
-    img2 = cv2.imread("simple2.jpg")
+    img2 = cv2.imread(MIDDLEST)
     img2 = cv2.circle(img2, (math.floor(fromThree[0, 0]), math.floor(fromThree[1, 0])), 7, (255, 0, 0), 5)
     cv2.imshow("thing2", img2)
 
@@ -240,7 +247,7 @@ if __name__ == "__main__":
     fromTwo = np.matmul(twoToOne, fromThree)
     
     
-    img1 = cv2.imread("simple1.jpg")
+    img1 = cv2.imread(BIGGEST)
     img1 = cv2.circle(img1, (math.floor(fromOG[0, 0]), math.floor(fromOG[1, 0])), 7, (0, 0, 255), 5)
     img1 = cv2.circle(img1, (math.floor(fromTwo[0, 0]), math.floor(fromTwo[1, 0])), 30, (255, 0, 0), 5)
     cv2.imshow("thing", img1)
