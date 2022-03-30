@@ -221,7 +221,7 @@ if __name__ == "__main__":
     #print("\n\nGenerated matrix registration: ", np.matmul(twoToOne, testCoordsOG))
     
 
-    img3 = cv2.imread("map3.jpg")
+    img3 = cv2.imread("simple3.jpg")
     img3 = cv2.circle(img3, (math.floor(CONSTX), math.floor(CONSTY)), 7, (255, 0, 0), 5)
     cv2.imshow("thing3", img3)
 
@@ -232,7 +232,7 @@ if __name__ == "__main__":
     #print(fromThree[1, 0])
 
 
-    img2 = cv2.imread("map2.jpg")
+    img2 = cv2.imread("simple2.jpg")
     img2 = cv2.circle(img2, (math.floor(fromThree[0, 0]), math.floor(fromThree[1, 0])), 7, (255, 0, 0), 5)
     cv2.imshow("thing2", img2)
 
@@ -240,7 +240,7 @@ if __name__ == "__main__":
     fromTwo = np.matmul(twoToOne, fromThree)
     
     
-    img1 = cv2.imread("map1.jpg")
+    img1 = cv2.imread("simple1.jpg")
     img1 = cv2.circle(img1, (math.floor(fromOG[0, 0]), math.floor(fromOG[1, 0])), 7, (0, 0, 255), 5)
     img1 = cv2.circle(img1, (math.floor(fromTwo[0, 0]), math.floor(fromTwo[1, 0])), 30, (255, 0, 0), 5)
     cv2.imshow("thing", img1)
