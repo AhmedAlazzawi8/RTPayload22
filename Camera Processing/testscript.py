@@ -1,3 +1,5 @@
+from asyncore import read
+from cv2 import VideoCapture
 import numpy as np
 import cv2
 import copy
@@ -181,80 +183,165 @@ def image_registration_matrix(img_name1 : str, img_name2 : str):
      translate_x_large=list(from_to.keys())[0][0], translate_y_large=list(from_to.keys())[0][1])
 
 
-def camera():
-    cap = cv2.VideoCapture(0)
-    #print("What the fuck")
-    cv2.namedWindow("test")
+def frame_registration_matrix(img11, img22):
+    #Returns transform matrix between the two images
+    sift = cv2.SIFT_create()
 
-    img_counter = 0
+    img1 = img11
+    img2 = img22
+    kp1, des1 = sift.detectAndCompute(img1,None)
+    kp2, des2 = sift.detectAndCompute(img2,None)
 
+
+    FLANN_INDEX_KDTREE = 1
+    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+    search_params = dict(checks = 50)
+
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+    matches = flann.knnMatch(des1, des2, k=2)
+
+    good_matches = []
+    for i, (m,n) in enumerate(matches):
+        if m.distance < 0.6*n.distance:
+            good_matches.append(m)
+
+    from_to = {}
+
+    for m in good_matches: #For loop which puts our matches as coordinate pairs into respective arrays
+        from_to[kp1[m.queryIdx].pt] = kp2[m.trainIdx].pt
+
+    #TODO Sort matches based on quality or metric like distance
+
+    (translate_x, translate_y) = list(from_to.keys())[0] 
+    #(coordxTest, coordyTest) = from_to[list(from_to.keys())[0]]
+    (translate_x_small, translate_y_small) = from_to[list(from_to.keys())[0]]
+    
+    calculationCoords = gen_fixed_coords(from_to, translate_x, translate_y, translate_x_small, translate_y_small)
+    
+    scaleFactor = gen_scale_factor(calculationCoords)
+    theta = gen_theta(calculationCoords)
+
+    return gen_transform_matrix(translate_x= -translate_x_small, translate_y= -translate_y_small, scale_factor = scaleFactor, theta=theta,
+     translate_x_large=list(from_to.keys())[0][0], translate_y_large=list(from_to.keys())[0][1])
+
+videoArrayFormat = []
+import uptime
+def curr_millis():
+    return uptime.uptime() * 1000
+def recordVideo():
+    cap = cv2.VideoCapture(1)
+
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    
+    writer = cv2.VideoWriter("flightVideo" + ".mp4", cv2.VideoWriter_fourcc(*'MPEG'), 60, (width,height))
+
+    # datetime.datetime.now().strftime("%I:%M:%S%p, %B %d, %Y")
+    frameCounter = 0
     while True:
-        ret, frame = cap.read()
-        #if not ret:
-         #   print("failed to grab frame")
-          #  continue
-        frame = undistort(frame)
-        cv2.imshow("test", frame)
+        ret,frame = cap.read()
+        if ret == True:
+            frameCounter += 1
+            videoArrayFormat.append((frameCounter, curr_millis()))
 
-        k = cv2.waitKey(1)
-        if k%256 == 27:
-            # ESC pressed
-            print("Escape hit, closing...")
+            writer.write(frame)
+
+            cv2.imshow('frame', frame)
+
+        if cv2.waitKey(1) & 0xFF == 27: #escape key, if not, then its the q key
             break
-        elif k%256 == 32:
-            # SPACE pressed
-            img_name = "opencv_frame_{}.png".format(img_counter)
-            cv2.imwrite(img_name, frame)
-            print("{} written!".format(img_name))
-            img_counter += 1
+
 
     cap.release()
+    writer.release()
+    cv2.destroyAllWindows()
+
+
+def readAndProcessVideo(file):
+    file_stream = cv2.VideoCapture(file)
+
+    if file_stream.isOpened() == False:
+        print("Failed to open video")
+        return
+
+    frameCounter = 0
+    #smaller, larger
+    #aggregateMatrix
+    while(file_stream.isOpened()):
+        ret, frame = file_stream.read()
+
+        if ret == True:
+            cv2.imshow('Frame',frame)
+            if(frameCounter == 0):
+                smaller = frame
+                frameCounter+=1
+            elif(frameCounter == 1):
+                larger = frame
+                frameCounter += 1
+            else:
+                smallToLarge = frame_registration_matrix(smaller, larger)
+                print(frameCounter) #, " ", smallToLarge)
+                frameCounter==1
+                smaller = larger
+                larger = frame
+                # if(frameCounter == 2):
+                #     aggregateMatrix = smallToLarge
+                #     frameCounter += 1
+                # else:
+                #     aggregateMatrix = gen_aggregate_matrix(aggregateMatrix)
+
+            cv2.waitKey(1)
+
+        if cv2.waitKey(1) & 0xFF == 27: #escape key, if not, then its the q key
+            break
+
+
+
+    file_stream.release()
+    cv2.destroyAllWindows()
+
     
-
-
-
 
 if __name__ == "__main__":
     
     #TODO Test surf by installing other opencv
     #surf = cv2.xfeatures2d.SURF_create(400)
-   
-    testCoordsOG = np.array([[CONSTX], [CONSTY], [1]])
-    twoToOne = image_registration_matrix(BIGGEST, MIDDLEST)
-    threeToTwo = image_registration_matrix(MIDDLEST, SMALLEST)
-    threeToOne = gen_aggregate_matrix(twoToOne, threeToTwo)
+    recordVideo()
+    readAndProcessVideo("flightVideo" + ".mp4")
+    # testCoordsOG = np.array([[CONSTX], [CONSTY], [1]])
+    # twoToOne = image_registration_matrix(BIGGEST, MIDDLEST)
+    # threeToTwo = image_registration_matrix(MIDDLEST, SMALLEST)
+    # threeToOne = gen_aggregate_matrix(twoToOne, threeToTwo)
 
-    #print("\n\nGenerated matrix registration: ", np.matmul(twoToOne, testCoordsOG))
+    # #print("\n\nGenerated matrix registration: ", np.matmul(twoToOne, testCoordsOG))
     
 
-    img3 = cv2.imread(SMALLEST)
-    img3 = cv2.circle(img3, (math.floor(CONSTX), math.floor(CONSTY)), 7, (255, 0, 0), 5)
-    cv2.imshow("thing3", img3)
+    # img3 = cv2.imread(SMALLEST)
+    # img3 = cv2.circle(img3, (math.floor(CONSTX), math.floor(CONSTY)), 7, (255, 0, 0), 5)
+    # cv2.imshow("thing3", img3)
 
 
 
-    fromThree = np.matmul(threeToTwo, testCoordsOG)
-    print(fromThree)
-    #print(fromThree[0, 0])
-    #print(fromThree[1, 0])
+    # fromThree = np.matmul(threeToTwo, testCoordsOG)
+    # print(fromThree)
+    # #print(fromThree[0, 0])
+    # #print(fromThree[1, 0])
 
 
-    img2 = cv2.imread(MIDDLEST)
-    img2 = cv2.circle(img2, (math.floor(fromThree[0, 0]), math.floor(fromThree[1, 0])), 7, (255, 0, 0), 5)
-    cv2.imshow("thing2", img2)
+    # img2 = cv2.imread(MIDDLEST)
+    # img2 = cv2.circle(img2, (math.floor(fromThree[0, 0]), math.floor(fromThree[1, 0])), 7, (255, 0, 0), 5)
+    # cv2.imshow("thing2", img2)
 
-    fromOG = np.matmul(threeToOne, testCoordsOG)
-    fromTwo = np.matmul(twoToOne, fromThree)
+    # fromOG = np.matmul(threeToOne, testCoordsOG)
+    # fromTwo = np.matmul(twoToOne, fromThree)
     
-    print(fromOG)
+    # print(fromOG)
     
-    img1 = cv2.imread(BIGGEST)
-    img1 = cv2.circle(img1, (math.floor(fromOG[0, 0]), math.floor(fromOG[1, 0])), 7, (0, 0, 255), 5)
-    img1 = cv2.circle(img1, (math.floor(fromTwo[0, 0]), math.floor(fromTwo[1, 0])), 30, (255, 0, 0), 5)
-    cv2.imshow("thing", img1)
+    # img1 = cv2.imread(BIGGEST)
+    # img1 = cv2.circle(img1, (math.floor(fromOG[0, 0]), math.floor(fromOG[1, 0])), 7, (0, 0, 255), 5)
+    # img1 = cv2.circle(img1, (math.floor(fromTwo[0, 0]), math.floor(fromTwo[1, 0])), 30, (255, 0, 0), 5)
+    # cv2.imshow("thing", img1)
 
-    
-    
 
 
 
