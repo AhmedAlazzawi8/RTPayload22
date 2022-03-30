@@ -13,11 +13,11 @@ import math
 CONSTX = 500
 CONSTY = 500
 
-SMALLEST = "3.jpg"
+SMALLEST = "book3.jpg"
 
-MIDDLEST = "2.jpg"
+MIDDLEST = "book2.jpg"
 
-BIGGEST = "1.jpg"
+BIGGEST = "book1.jpg"
 
 def sanityCheck():
     sift = cv2.SIFT_create()
@@ -234,7 +234,7 @@ if __name__ == "__main__":
 
 
     fromThree = np.matmul(threeToTwo, testCoordsOG)
-    #print(fromThree)
+    print(fromThree)
     #print(fromThree[0, 0])
     #print(fromThree[1, 0])
 
@@ -246,6 +246,7 @@ if __name__ == "__main__":
     fromOG = np.matmul(threeToOne, testCoordsOG)
     fromTwo = np.matmul(twoToOne, fromThree)
     
+    print(fromOG)
     
     img1 = cv2.imread(BIGGEST)
     img1 = cv2.circle(img1, (math.floor(fromOG[0, 0]), math.floor(fromOG[1, 0])), 7, (0, 0, 255), 5)
