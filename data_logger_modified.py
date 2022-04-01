@@ -49,7 +49,7 @@ class Logger:
 				"qX,qY,qZ,linAccX,linAccY,linAccZ,GravX,GravY,GravZ\n")
 
 		self.bus = smbus.SMBus(1)    # or bus = smbus.SMBus(0) for older version boards
-		self.Device_Address = 0x68   # MPU6050 device address
+		#self.Device_Address = 0x68   # MPU6050 device address
 		
 		# self.MPU_Init()
 		#print (" Reading Data of Gyroscope and Accelerometer")
@@ -99,7 +99,7 @@ class Logger:
 			datamessage = datamessage + "0" + ","
 
 		# print("Pressure: {:6.4f}  Temperature: {:5.2f} Altitude: {} meters".format(self.bmp.pressure, self.bmp.temperature, self.bmp.altitude))
-		datamessage = datamessage + str(self.bmp.pressure) +"," '''+ str(self.bmp.temperature) +","''' + str(self.bmp.altitude) + "\n"
+		datamessage = datamessage + str(self.bmp.pressure) +"," + str(self.bmp.temperature) +"," + str(self.bmp.altitude) + "\n"
 
 		self.file.write(datamessage)
 		self.file.flush()
